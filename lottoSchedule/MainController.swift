@@ -8,10 +8,16 @@
 import UIKit
 
 class MainController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .red
+        if FirstRunCheck.shared.isFirstRun { // first excute!
+            let firstVC = FirstRunController()
+            firstVC.modalPresentationStyle = .fullScreen
+            self.present(firstVC, animated: true)
+        }else {
+            self.view.backgroundColor = .red
+        }
     }
 }
 
