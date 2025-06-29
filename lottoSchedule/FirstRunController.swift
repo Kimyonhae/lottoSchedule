@@ -14,7 +14,7 @@ class FirstRunController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Grandient 배경 설정
-        setUpGradientBackground()
+        UICommon.setUpGradientBackground(view: self.view)
         // ImageView Closer
         setUpImageView()
         // 제목 뷰 설정
@@ -24,34 +24,7 @@ class FirstRunController: UIViewController {
         // 계속하기 버튼
         setUpButton()
     }
-    
-    // TODO: Grandient 배경 설정
-    private func setUpGradientBackground() {
-        self.view.backgroundColor = .clear
-        
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = self.view.bounds
-        gradientLayer.colors = [
-            UIColor(hex: "FAE6E6").cgColor,
-            UIColor.white.cgColor,
-            UIColor(hex: "FAE6E6").cgColor,
-        ]
-        
-        // 영역
-        gradientLayer.locations = [
-            NSNumber(value: 0.0),
-            NSNumber(value: 0.2),
-            NSNumber(value: 0.9),
-            NSNumber(value: 1.0)
-        ]
-        
-        // 방향 설정 (top → bottom)
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        
-        // 뷰에 추가
-        self.view.layer.insertSublayer(gradientLayer, at: 0)
-    }
+
     // TODO: 이미지 뷰 설정
     private func setUpImageView() {
         lazy var imageView: UIImageView = {
@@ -181,8 +154,10 @@ class FirstRunController: UIViewController {
             return btn
         }()
         
-        button.addAction(UIAction { _ in
+        button.addAction(UIAction { [weak self] _ in
             UserDefaults.standard.set(true, forKey: "isFirstRun") // not first excute
+            
+            self?.dismiss(animated: true) // 닫기
         }, for: .touchUpInside)
         
         self.view.addSubview(button)
