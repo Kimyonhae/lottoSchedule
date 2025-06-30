@@ -9,6 +9,7 @@ import UIKit
 
 class MainController: UIViewController {
     private let tableView = UITableView()
+    var lottos: [Lotto] = []
     
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: false) // 기존 AppBar Remove
@@ -16,6 +17,7 @@ class MainController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.lottos = DataManager.shared.readLotto() ?? []
         UICommon.setUpGradientBackground(view: self.view)
         // 상단 AppBar Navigation
         setUpAppBarNavigation()
@@ -131,8 +133,11 @@ class MainController: UIViewController {
             button.configuration = config
             
             // Touch Action
-            button.addAction(UIAction { _ in
-                print("Scanner Button Clicked!!")
+            button.addAction(UIAction {[weak self] _ in
+                guard let self = self else { return }
+                DataManager.shared.createLotto(numbers: [1, 23, 43, 34, 11, 8])
+                self.lottos = DataManager.shared.readLotto() ?? []
+                self.tableView.reloadData()
             }, for: .touchUpInside)
             
             return button
@@ -150,8 +155,10 @@ class MainController: UIViewController {
 }
 
 extension MainController: UITableViewDelegate, UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        10
+        
+        return lottos.isEmpty ? 0 : lottos.count
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -163,10 +170,13 @@ extension MainController: UITableViewDelegate, UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let numbers = [1, 23, 43, 34, 11, 8]
         cell.backgroundColor = .clear
         cell.selectionStyle = .none
-        cell.configure(numbers: numbers, date: "6월 27일 금요일")
+        
+        if !lottos.isEmpty {
+            let lotto = lottos[indexPath.row]
+            cell.configure(numbers: lotto.numbers as! [Int], date: lotto.date ?? .now)
+        }
         return cell
     }
 }

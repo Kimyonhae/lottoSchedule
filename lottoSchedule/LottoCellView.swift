@@ -53,6 +53,9 @@ class LottoCellView: UITableViewCell {
         config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         btn.configuration = config
         btn.tintColor = UIColor(hex: "AAAAAA")
+        btn.addAction(UIAction { _ in
+            print("hello PopButton")
+        }, for: .touchUpInside)
         btn.widthAnchor.constraint(equalToConstant: 20).isActive = true
         btn.heightAnchor.constraint(equalToConstant: 20).isActive = true
         
@@ -121,14 +124,24 @@ class LottoCellView: UITableViewCell {
         ])
     }
 
-    func configure(numbers: [Int], date: String) {
+    func configure(numbers: [Int], date: Date) {
 //        numberStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         numbers.forEach {
             numberStack.addArrangedSubview(getLottoNumber(num: $0))
         }
-        dateLabel.text = date
+        getDateFormatter(date: date)
     }
-
+    
+    //TODO: Date 포멧 함수
+    private func getDateFormatter(date: Date) {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M월 d일"
+        
+        let dateString = formatter.string(from: date)
+        dateLabel.text = dateString
+    }
+    
     private func getLottoColor(for num: Int) -> UIColor {
         switch num {
         case 1...10:
