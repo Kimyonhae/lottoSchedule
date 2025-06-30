@@ -9,9 +9,13 @@ import UIKit
 
 class MainController: UIViewController {
     private let tableView = UITableView()
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationController?.setNavigationBarHidden(true, animated: false) // 기존 AppBar Remove
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         UICommon.setUpGradientBackground(view: self.view)
         // 상단 AppBar Navigation
         setUpAppBarNavigation()
@@ -79,7 +83,7 @@ class MainController: UIViewController {
         self.view.addSubview(appBarNavigation)
         
         NSLayoutConstraint.activate([
-            appBarNavigation.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            appBarNavigation.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             appBarNavigation.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
             appBarNavigation.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
         ])
@@ -91,6 +95,8 @@ class MainController: UIViewController {
         tableView.delegate = self
         tableView.register(LottoCellView.self, forCellReuseIdentifier: LottoCellView.identifier)
         tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
         
         self.view.addSubview(tableView)
         
@@ -145,14 +151,21 @@ class MainController: UIViewController {
 
 extension MainController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        1
+        10
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        "이번주"
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: LottoCellView.identifier, for: indexPath) as? LottoCellView else {
             return UITableViewCell()
         }
+        
         let numbers = [1, 23, 43, 34, 11, 8]
+        cell.backgroundColor = .clear
+        cell.selectionStyle = .none
         cell.configure(numbers: numbers, date: "6월 27일 금요일")
         return cell
     }
