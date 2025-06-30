@@ -12,8 +12,24 @@ class LottoCellView: UITableViewCell {
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
     }()
+    
+    // TODO: Lotto 숫자 각각 한개에 해당
+    private func getLottoNumber(num: Int) -> UILabel {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "\(num)"
+        label.textAlignment = .center
+        label.font = .boldSystemFont(ofSize: 14)
+        label.textColor = .white
+        label.layer.cornerRadius = 20
+        label.clipsToBounds = true
+        label.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        label.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        label.backgroundColor = getLottoColor(for: num)
+        return label
+    }
 
-    private let separator: UIView = {
+    private let divider: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.systemGray4
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -25,7 +41,6 @@ class LottoCellView: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 14)
         label.tintColor = UIColor(hex: "AAAAAA")
-        label.text = "2025 6월 29일"
         
         return label
     }()
@@ -59,7 +74,7 @@ class LottoCellView: UITableViewCell {
         container.translatesAutoresizingMaskIntoConstraints = false
         container.axis = .vertical
         container.spacing = 8
-        container.distribution = .fillProportionally
+        container.distribution = .fill
         container.backgroundColor = .white
         
         container.layer.shadowColor = UIColor(hex: "676767").cgColor
@@ -85,8 +100,9 @@ class LottoCellView: UITableViewCell {
     }
 
     private func setUpViews() {
+        
         container.addArrangedSubview(numberStack)
-        container.addArrangedSubview(separator)
+        container.addArrangedSubview(divider)
         
         bottomStackView.addArrangedSubview(dateLabel)
         bottomStackView.addArrangedSubview(lottoPopButton)
@@ -96,45 +112,21 @@ class LottoCellView: UITableViewCell {
         contentView.addSubview(container)
 
         NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: contentView.topAnchor),
-            container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            container.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 4),
+            container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -4),
+            container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             
-            numberStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
-            
-            separator.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            separator.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            separator.heightAnchor.constraint(equalToConstant: 1),
-            
-            bottomStackView.topAnchor.constraint(equalTo: separator.bottomAnchor, constant: 8),
-            bottomStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor , constant: 8),
-            bottomStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            divider.heightAnchor.constraint(equalToConstant: 1),
         ])
     }
 
     func configure(numbers: [Int], date: String) {
-        numberStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
-        let allNumbers = numbers
-        for (index, num) in allNumbers.enumerated() {
-            let label = UILabel()
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "\(num)"
-            label.textAlignment = .center
-            label.font = .boldSystemFont(ofSize: 14)
-            label.textColor = .white
-            label.layer.cornerRadius = 20
-            label.clipsToBounds = true
-            label.widthAnchor.constraint(equalToConstant: 40).isActive = true
-            label.heightAnchor.constraint(equalToConstant: 40).isActive = true
-
-            if index < 6 {
-                label.backgroundColor = getLottoColor(for: num)
-            }
-
-            numberStack.addArrangedSubview(label)
+//        numberStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        numbers.forEach {
+            numberStack.addArrangedSubview(getLottoNumber(num: $0))
         }
+        dateLabel.text = date
     }
 
     private func getLottoColor(for num: Int) -> UIColor {
@@ -150,5 +142,11 @@ class LottoCellView: UITableViewCell {
         default:
             return UIColor.systemIndigo
         }
+    }
+    
+    // 초기화
+    override func prepareForReuse() {
+        dateLabel.text = nil
+        numberStack.subviews.forEach{ $0.removeFromSuperview() }
     }
 }
