@@ -1,8 +1,9 @@
 import UIKit
 
 class LottoCellView: UITableViewCell {
+    weak var delegate: LottoCellViewDelegate?
     static let identifier = "LottoCellView"
-
+    var lotto: Lotto?
     private let numberStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
@@ -45,7 +46,7 @@ class LottoCellView: UITableViewCell {
         return label
     }()
     
-    private let lottoPopButton: UIButton = {
+    private lazy var lottoPopButton: UIButton = {
         let btn = UIButton()
         btn.translatesAutoresizingMaskIntoConstraints = false
         var config = UIButton.Configuration.plain()
@@ -53,12 +54,14 @@ class LottoCellView: UITableViewCell {
         config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         btn.configuration = config
         btn.tintColor = UIColor(hex: "AAAAAA")
-        btn.addAction(UIAction { _ in
-            print("hello PopButton")
+        btn.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            if let lotto = self.lotto {
+                self.delegate?.didTapPopButton(sourceView: btn, lotto: lotto)
+            }
         }, for: .touchUpInside)
         btn.widthAnchor.constraint(equalToConstant: 20).isActive = true
         btn.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        
         return btn
     }()
     
@@ -124,12 +127,12 @@ class LottoCellView: UITableViewCell {
         ])
     }
 
-    func configure(numbers: [Int], date: Date) {
-//        numberStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        numbers.forEach {
-            numberStack.addArrangedSubview(getLottoNumber(num: $0))
+    func configure(with lotto: Lotto) {
+        self.lotto = lotto
+        lotto.numbers?.forEach {
+            numberStack.addArrangedSubview(getLottoNumber(num: $0 as! Int))
         }
-        getDateFormatter(date: date)
+        getDateFormatter(date: lotto.date ?? .now)
     }
     
     //TODO: Date 포멧 함수
