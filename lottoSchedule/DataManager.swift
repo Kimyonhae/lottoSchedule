@@ -10,6 +10,7 @@ import CoreData
 
 class DataManager {
     static let shared = DataManager()
+    var lottos: [Lotto] = [] // 전역으로 사용할 Data
     private init() {}
     private var persistentContainer: NSPersistentContainer? {
         (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer
@@ -37,5 +38,17 @@ class DataManager {
         }
         
         return nil
+    }
+    
+    func deleteLotto(lotto: Lotto) {
+        guard let context = persistentContainer?.viewContext else { return }
+        print("hello..? delete...?")
+        context.delete(lotto)
+        try? context.save()
+    }
+    
+    //TODO: 기존 lottos 배열을 reload
+    func updateLottos() {
+        self.lottos = readLotto() ?? []
     }
 }
