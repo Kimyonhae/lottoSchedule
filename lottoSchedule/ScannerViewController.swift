@@ -7,13 +7,12 @@
 
 import UIKit
 import AVFoundation
+import Combine
 
 class ScannerViewController: UIViewController {
-    private var scanResult: URL!
+    private var scanResult: String?
     private let captureSession = AVCaptureSession()
     private var previewLayer: AVCaptureVideoPreviewLayer!
-    
-    // previewLayer를 담을 뷰
     lazy var cameraView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -25,6 +24,14 @@ class ScannerViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         
         return view
+    }()
+    
+    lazy var testLabel: UILabel = {
+        let label = UILabel()
+        label.text = scanResult ?? "QR 코드 아직없음"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = .systemFont(ofSize: 21, weight: .semibold)
+        return label
     }()
     
     override func viewDidLoad() {
@@ -96,7 +103,6 @@ class ScannerViewController: UIViewController {
                 // 백그라운드 실행이 필요한 함수
                 self.captureSession.startRunning()
             }
-            
         } catch {
             print("카메라 접근 실패..\(error)")
         }
@@ -113,13 +119,19 @@ class ScannerViewController: UIViewController {
     // TODO: 하단 View
     func setupBottomView() {
         
+        bottomView.addSubview(testLabel)
         self.view.addSubview(bottomView)
         
         NSLayoutConstraint.activate([
             bottomView.topAnchor.constraint(equalTo: cameraView.bottomAnchor),
             bottomView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
             bottomView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            bottomView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
+            bottomView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            
+            testLabel.topAnchor.constraint(equalTo: bottomView.topAnchor),
+            testLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor),
+            testLabel.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
+            testLabel.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor)
         ])
     }
     // leftBarButtonItem selector method
@@ -133,7 +145,9 @@ extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if let metaData = metadataObjects.first as? AVMetadataMachineReadableCodeObject, metaData.type == .qr {
             if let result = metaData.stringValue {
-                scanResult = URL(string: result) // URL로 scanResult address check
+                self.scanResult = result // URL로 scanResult address check
+                guard scanResult != nil else { return }
+                testLabel.text = scanResult
                 DispatchQueue.main.async {
                     self.captureSession.stopRunning()
                 }
