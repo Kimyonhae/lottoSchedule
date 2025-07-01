@@ -136,9 +136,10 @@ class MainController: UIViewController {
             // Touch Action
             button.addAction(UIAction {[weak self] _ in
                 guard let self = self else { return }
-                DataManager.shared.createLotto(numbers: [1, 23, 43, 34, 11, 8])
-                DataManager.shared.updateLottos()
-                self.tableView.reloadData()
+                let scannerVC = UINavigationController(rootViewController: ScannerViewController())
+                scannerVC.modalPresentationStyle = .fullScreen
+                self.present(scannerVC, animated: true)
+                
             }, for: .touchUpInside)
             
             return button
