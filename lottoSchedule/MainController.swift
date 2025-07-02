@@ -11,7 +11,9 @@ class MainController: UIViewController {
     private let tableView = UITableView()
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(true, animated: false) // 기존 AppBar Remove
+        tableView.reloadData() // dismiss로 돌아올때 tableView 업데이트
     }
     
     override func viewDidLoad() {
