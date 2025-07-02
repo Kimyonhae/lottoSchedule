@@ -89,7 +89,6 @@ class LottoCellView: UITableViewCell {
         container.layer.shadowRadius = 4
         container.layer.cornerRadius = 12
         
-        
         container.isLayoutMarginsRelativeArrangement = true
         container.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 8, right: 16)
         
