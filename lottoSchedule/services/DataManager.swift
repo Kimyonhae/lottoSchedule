@@ -16,12 +16,13 @@ class DataManager {
         (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer
     }
     
-    func createLotto(numbers: [Int]) {
+    func createLotto(numbers: [Int], round: String) {
         guard let context = self.persistentContainer?.viewContext else { return }
         let lotto = Lotto(context: context)
         
         lotto.id = UUID()
         lotto.date = Date()
+        lotto.round = Int32(round.filter{ $0.isNumber })! // 숫자만 필터링
         lotto.numbers = numbers as NSArray
         
         try? context.save()
