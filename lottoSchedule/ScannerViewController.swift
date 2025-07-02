@@ -50,8 +50,8 @@ class ScannerViewController: UIViewController {
         viewModel.scannerDelegate = self // ScannerVC에 주입
         // 기본 설정
         setUpConfigure()
-        // Permission check and request Permisson
-        requestCameraPermission()
+        // Camera View Container if authorized
+        setUpCameraConfigure()
         // bottom view container
         setupBottomView()
         // bottom EmptyView setUp
@@ -68,27 +68,8 @@ class ScannerViewController: UIViewController {
     private func setUpConfigure() {
         self.view.backgroundColor = .white
         navigationItem.title = "로또 스캔"
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "minus.circle"), style: .plain, target: self, action: #selector(closeScanner))
-    }
-    
-    // TODO: Camera 요청 권한을 통해 setUpCameraConfigure 실행
-    private func requestCameraPermission() {
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-            // 카메라 실행
-            print(" 접근 권한이 있음!!")
-            setUpCameraConfigure()
-        case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { granted in
-                if granted { //bool
-                    DispatchQueue.main.async {
-                        self.setUpCameraConfigure()
-                    }
-                }
-            }
-        default:
-            print("접근을 허용 안함")
-        }
+        navigationItem.leftBarButtonItem?.tintColor = .black
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeScanner))
     }
         
     // TODO: 카메라 화면 뷰

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class MainController: UIViewController {
     private let tableView = UITableView()
@@ -83,8 +84,6 @@ class MainController: UIViewController {
             return bar
         }()
         
-        
-        
         self.view.addSubview(appBarNavigation)
         
         NSLayoutConstraint.activate([
@@ -137,11 +136,15 @@ class MainController: UIViewController {
             
             // Touch Action
             button.addAction(UIAction {[weak self] _ in
-                guard let self = self else { return }
-                let scannerVC = UINavigationController(rootViewController: ScannerViewController())
-                scannerVC.modalPresentationStyle = .fullScreen
-                self.present(scannerVC, animated: true)
-                
+                // Camera Permission Check
+                self?.requestCameraPermission { grant in
+                    if grant { // 권한이 있는 경우
+                        guard let self = self else { return }
+                        let scannerVC = UINavigationController(rootViewController: ScannerViewController())
+                        scannerVC.modalPresentationStyle = .fullScreen
+                        self.present(scannerVC, animated: true)
+                    }
+                }
             }, for: .touchUpInside)
             
             return button
@@ -161,6 +164,7 @@ class MainController: UIViewController {
 // 의존 분리를 위한 Delegate
 protocol LottoCellViewDelegate: AnyObject {
     func didTapPopButton(sourceView: UIView, lotto: Lotto)
+    func requestCameraPermission(completionHandler: @escaping (Bool) -> Void)
 }
 
 // 의존 분리 reloadData를 통해 TableView를 업데이트
@@ -199,6 +203,27 @@ extension MainController: UITableViewDelegate, UITableViewDataSource {
 
 // PopOver 구현부
 extension MainController: LottoCellViewDelegate {
+    // TODO: Camera 요청 권한을 통해 setUpCameraConfigure 실행
+    func requestCameraPermission(completionHandler: @escaping (Bool) -> Void) {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            // 카메라 실행
+            print(" 접근 권한이 있음!!")
+            completionHandler(true)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                completionHandler(granted)
+            }
+        default:
+            // 권한 SettingView Route
+            if let appSettingPath = URL(string: UIApplication.openSettingsURLString),UIApplication.shared.canOpenURL(appSettingPath) {
+                UIApplication.shared.open(appSettingPath, options: [:], completionHandler: nil)
+            }
+            print("접근을 허용 안함")
+            completionHandler(false)
+        }
+    }
+    
     func didTapPopButton(sourceView: UIView, lotto: Lotto) {
         let popVC = PopOverContentViewController(lotto: lotto)
         popVC.modalPresentationStyle = .popover
