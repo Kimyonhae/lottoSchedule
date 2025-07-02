@@ -13,6 +13,8 @@ class ScannerViewController: UIViewController {
     private var scanResult: String?
     private let captureSession = AVCaptureSession()
     private var previewLayer: AVCaptureVideoPreviewLayer!
+    private var tableView: UITableView!
+    private var hasLottoValue: Bool = false // QR 스캔 전 뷰 상태 값
     lazy var cameraView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -26,12 +28,25 @@ class ScannerViewController: UIViewController {
         return view
     }()
     
-    lazy var testLabel: UILabel = {
+    // TODO: QR 설명 Label
+    lazy var explainLabel: UILabel = {
         let label = UILabel()
-        label.text = scanResult ?? "QR 코드 아직없음"
+        label.text = "QR 코드를 스캔하거나 QR 이미지를 업로드 해보세요"
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 21, weight: .semibold)
+        label.font = .systemFont(ofSize: 14, weight: .semibold)
+        label.tintColor = .systemGray3
+        label.textAlignment = .center
         return label
+    }()
+    // Empty Container
+    let emptyView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.distribution = .fillProportionally
+        
+        return stack
     }()
     
     override func viewDidLoad() {
@@ -42,6 +57,12 @@ class ScannerViewController: UIViewController {
         requestCameraPermission()
         // bottom view container
         setupBottomView()
+        // bottom tableView setUp
+        setUpLottoList()
+        // bottom EmptyView setUp
+        setUpEmptyView()
+        // bottom State setUp
+        updateLottoStateUI()
     }
     
     // AutoLayout이 지정된 후 배치
@@ -118,8 +139,7 @@ class ScannerViewController: UIViewController {
         
     // TODO: 하단 View
     func setupBottomView() {
-        
-        bottomView.addSubview(testLabel)
+        bottomView.addSubview(explainLabel)
         self.view.addSubview(bottomView)
         
         NSLayoutConstraint.activate([
@@ -128,17 +148,98 @@ class ScannerViewController: UIViewController {
             bottomView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
             bottomView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
             
-            testLabel.topAnchor.constraint(equalTo: bottomView.topAnchor),
-            testLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor),
-            testLabel.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
-            testLabel.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor)
+            explainLabel.topAnchor.constraint(equalTo: bottomView.topAnchor, constant: 20),
+            explainLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor),
+            explainLabel.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
         ])
     }
+    
     // leftBarButtonItem selector method
     @objc func closeScanner() {
         self.dismiss(animated: true)
     }
+    
+    // TODO: tableView setUp for Lotto checking
+    private func setUpLottoList() {
+        tableView = UITableView()
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.separatorStyle = .none
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(ScannerCellView.self, forCellReuseIdentifier: ScannerCellView.identifier)
+        
+        bottomView.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: explainLabel.bottomAnchor, constant: 20),
+            tableView.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor)
+        ])
+    }
+    
+    // TODO: empty lotto view in bottom
+    private func setUpEmptyView() {
+        let imageView: UIImageView = {
+            let image = UIImageView(image: UIImage(systemName: "qrcode.viewfinder"))
+            image.translatesAutoresizingMaskIntoConstraints = false
+            image.contentMode = .scaleAspectFit
+            image.tintColor = .lightGray
+            image.isUserInteractionEnabled = true
+            image.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(scanQRCode)))
+            
+            return image
+        }()
+        
+        let labelView: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.font = .systemFont(ofSize: 14, weight: .light)
+            label.text = "QR코드 스캔하기"
+            label.tintColor = .lightGray
+            
+            return label
+        }()
+        
+        emptyView.addArrangedSubview(imageView)
+        emptyView.addArrangedSubview(labelView)
+        bottomView.addSubview(emptyView)
+        NSLayoutConstraint.activate([
+            emptyView.centerXAnchor.constraint(equalTo: bottomView.centerXAnchor),
+            emptyView.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
+            
+            imageView.widthAnchor.constraint(equalToConstant: 50),
+            imageView.heightAnchor.constraint(equalToConstant: 50),
+        ])
+    }
+    
+    @objc func scanQRCode() {
+        self.hasLottoValue.toggle()
+        print("hasLottoValue: \(hasLottoValue)")
+        updateLottoStateUI()
+    }
+    
+    private func updateLottoStateUI() {
+        tableView.isHidden = !hasLottoValue
+        emptyView.isHidden = hasLottoValue
+    }
 }
+
+extension ScannerViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScannerCellView.identifier) as? ScannerCellView else {
+            return ScannerCellView()
+        }
+        cell.selectionStyle = .none
+        cell.configure(with: [12,23,45,32,11,23])
+        return cell
+    }
+}
+
 
 
 extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
@@ -147,7 +248,6 @@ extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
             if let result = metaData.stringValue {
                 self.scanResult = result // URL로 scanResult address check
                 guard scanResult != nil else { return }
-                testLabel.text = scanResult
                 DispatchQueue.main.async {
                     self.captureSession.stopRunning()
                 }
