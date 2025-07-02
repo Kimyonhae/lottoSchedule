@@ -7,20 +7,16 @@
 
 import UIKit
 import AVFoundation
-import Combine
 
 class ScannerViewController: UIViewController {
-    private var scanResult: String?
+    private var viewModel: ScannerViewModel = .init()
     private let captureSession = AVCaptureSession()
     private var previewLayer: AVCaptureVideoPreviewLayer!
-    private var tableView: UITableView!
-    private var hasLottoValue: Bool = false // QR 스캔 전 뷰 상태 값
     lazy var cameraView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
     lazy var bottomView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -51,18 +47,15 @@ class ScannerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.scannerDelegate = self // ScannerVC에 주입
         // 기본 설정
         setUpConfigure()
         // Permission check and request Permisson
         requestCameraPermission()
         // bottom view container
         setupBottomView()
-        // bottom tableView setUp
-        setUpLottoList()
         // bottom EmptyView setUp
         setUpEmptyView()
-        // bottom State setUp
-        updateLottoStateUI()
     }
     
     // AutoLayout이 지정된 후 배치
@@ -159,25 +152,6 @@ class ScannerViewController: UIViewController {
         self.dismiss(animated: true)
     }
     
-    // TODO: tableView setUp for Lotto checking
-    private func setUpLottoList() {
-        tableView = UITableView()
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.separatorStyle = .none
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.register(ScannerCellView.self, forCellReuseIdentifier: ScannerCellView.identifier)
-        
-        bottomView.addSubview(tableView)
-        
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: explainLabel.bottomAnchor, constant: 20),
-            tableView.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor)
-        ])
-    }
-    
     // TODO: empty lotto view in bottom
     private func setUpEmptyView() {
         let imageView: UIImageView = {
@@ -185,8 +159,6 @@ class ScannerViewController: UIViewController {
             image.translatesAutoresizingMaskIntoConstraints = false
             image.contentMode = .scaleAspectFit
             image.tintColor = .lightGray
-            image.isUserInteractionEnabled = true
-            image.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(scanQRCode)))
             
             return image
         }()
@@ -212,46 +184,36 @@ class ScannerViewController: UIViewController {
             imageView.heightAnchor.constraint(equalToConstant: 50),
         ])
     }
-    
-    @objc func scanQRCode() {
-        self.hasLottoValue.toggle()
-        print("hasLottoValue: \(hasLottoValue)")
-        updateLottoStateUI()
-    }
-    
-    private func updateLottoStateUI() {
-        tableView.isHidden = !hasLottoValue
-        emptyView.isHidden = hasLottoValue
-    }
+
 }
-
-extension ScannerViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        1
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: ScannerCellView.identifier) as? ScannerCellView else {
-            return ScannerCellView()
-        }
-        cell.selectionStyle = .none
-        cell.configure(with: [12,23,45,32,11,23])
-        return cell
-    }
-}
-
-
 
 extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if let metaData = metadataObjects.first as? AVMetadataMachineReadableCodeObject, metaData.type == .qr {
             if let result = metaData.stringValue {
-                self.scanResult = result // URL로 scanResult address check
-                guard scanResult != nil else { return }
+                
+                // 한번만 주입 하고 똑같은 값은 guard 처리
+                guard viewModel.scanResult != result else { return }
+                
+                self.viewModel.scanResult = result // URL로 scanResult address check
+
+                viewModel.fetchCrawlingData()
+                
                 DispatchQueue.main.async {
                     self.captureSession.stopRunning()
                 }
             }
+        }
+    }
+}
+
+
+extension ScannerViewController: ScannerViewDelegate {
+    func scannerCompletion(with lotto: [Int], round: String) {
+        DispatchQueue.main.async {
+            DataManager.shared.createLotto(numbers: lotto, round: round)
+            DataManager.shared.updateLottos()
+            self.dismiss(animated: true)
         }
     }
 }
