@@ -8,11 +8,20 @@
 import UIKit
 
 class PopOverContentViewController: UITableViewController {
-    let lotto: Lotto
+    var lotto: Lotto? = nil
     weak var delegate: PopOverContentViewControllerDelegate?
-    
-    init(lotto: Lotto) {
+    private let menu: [MenuItem]
+    init(lotto: Lotto, menu: [MenuItem]) {
         self.lotto = lotto
+        self.menu = menu
+        
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    // basic init
+    init(menu: [MenuItem]) {
+        self.menu = menu
+        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -20,20 +29,6 @@ class PopOverContentViewController: UITableViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private struct MenuItem {
-        let title: String
-        let iconName: String
-        let action: action
-        enum action {
-            case update
-            case delete
-        }
-    }
-    
-    private let menu: [MenuItem] = [
-        MenuItem(title: "수정하기", iconName: "pencil.circle", action: .update),
-        MenuItem(title: "삭제하기", iconName: "trash.circle", action: .delete)
-    ]
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
@@ -68,7 +63,16 @@ class PopOverContentViewController: UITableViewController {
                 print("update!!")
             case .delete:
                 print("hello delete!!")
-                delegate?.didTapDeleteButton(lotto: lotto)
+                if let lotto = lotto {
+                    delegate?.didTapDeleteButton(lotto: lotto)
+                }
+            case .destination:
+                print("페이지 이동을 할거에요")
+            self.dismiss(animated: true) { [weak self] in
+                self?.delegate?.didTapLottoResultButton()
+            }
+            
+            return
         }
         self.dismiss(animated: true)
     }
