@@ -11,10 +11,17 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        UNUserNotificationCenter.current().requestAuthorization(
+            options: [.alert,.sound,.badge],
+            completionHandler: { authorized, error in
+                print("알림 권한 허락함 : \(authorized)")
+//                if !authorized { // 권한이 없다면
+//                    LottoCheckNotification.shared.checkNoticePermission()
+//                }
+            }
+        )
+        
         return true
     }
 
