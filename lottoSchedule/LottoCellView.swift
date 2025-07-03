@@ -47,6 +47,12 @@ class LottoCellView: UITableViewCell {
     }()
     
     private lazy var lottoPopButton: UIButton = {
+        // data list
+        let menu = [
+            MenuItem(title: "수정하기", iconName: "pencil.circle", action: .update),
+            MenuItem(title: "삭제하기", iconName: "trash.circle", action: .delete)
+        ]
+        
         let btn = UIButton()
         btn.translatesAutoresizingMaskIntoConstraints = false
         var config = UIButton.Configuration.plain()
@@ -57,7 +63,7 @@ class LottoCellView: UITableViewCell {
         btn.addAction(UIAction { [weak self] _ in
             guard let self = self else { return }
             if let lotto = self.lotto {
-                self.delegate?.didTapPopButton(sourceView: btn, lotto: lotto)
+                self.delegate?.didTapPopButton(sourceView: btn, lotto: lotto, menu: menu)
             }
         }, for: .touchUpInside)
         btn.widthAnchor.constraint(equalToConstant: 20).isActive = true
