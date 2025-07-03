@@ -19,6 +19,14 @@ class MainController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // 알림 권한 - Notification
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(enterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
         // 초기 lottos 가져오기
         DataManager.shared.updateLottos()
         // Gradient 배경 설정
@@ -36,26 +44,30 @@ class MainController: UIViewController {
         }
     }
     
+    // selector - foreground 진입시 호출
+    @objc func enterForeground() {
+        LottoCheckNotification.shared.checkNoticePermission()
+        // check Schdules
+        LottoCheckNotification.shared.printAllScheduledNotifications()
+    }
+    
     // TODO: 상단 AppBar Navigation (tag: 1001)
     private func setUpAppBarNavigation() {
-        let titleView: UILabel = {
-            let label = UILabel()
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "로또 모음"
-            label.font = .systemFont(ofSize: 24, weight: .bold)
-            return label
-        }()
-        
         /// 상단 AppBar 검색과 더 보기 View 함수
         /// - parameters:
         ///  - iconName: icon Symbol Name
-        ///  - action: closer Method for touchUpInside
-        func getTopbarButton(iconName: String, action: UIAction) -> UIButton {
+        ///  - menu: popover menu array
+        func getTopbarButton(iconName: String, menu: [MenuItem]? = nil) -> UIButton {
             let btn = UIButton()
             btn.translatesAutoresizingMaskIntoConstraints = false
             btn.widthAnchor.constraint(equalToConstant: 48).isActive = true
             btn.heightAnchor.constraint(equalToConstant: 48).isActive = true
-            btn.addAction(action, for: .touchUpInside)
+            btn.tintColor = UIColor(hex: "AAAAAA")
+            btn.addAction(UIAction {_ in
+                if let menu = menu {
+                    self.didTapPopButton(sourceView: btn, menu: menu)
+                }
+            }, for: .touchUpInside)
             
             var config = UIButton.Configuration.plain()
             config.image = UIImage(systemName: iconName)
@@ -65,15 +77,24 @@ class MainController: UIViewController {
             return btn
         }
         
+        let titleView: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.text = "로또 모음"
+            label.font = .systemFont(ofSize: 24, weight: .bold)
+            return label
+        }()
+        
+        // popover Button
+        let moreButton = getTopbarButton(iconName: "ellipsis.circle.fill", menu: [
+            MenuItem(title: "로또 결과", iconName: "square.and.pencil.circle", action: .destination)
+        ])
+        
         let appBarNavigation: UIStackView = {
             let bar = UIStackView(arrangedSubviews: [
                 titleView,
-                getTopbarButton(iconName: "magnifyingglass.circle.fill", action: UIAction { _ in
-                    print("hello Search!!!")
-                }),
-                getTopbarButton(iconName: "ellipsis.circle.fill", action: UIAction { _ in
-                    print("hello Dot Dot Dot!!")
-                }),
+                getTopbarButton(iconName: "magnifyingglass.circle.fill"),
+                moreButton
             ])
             bar.translatesAutoresizingMaskIntoConstraints = false
             bar.axis = .horizontal
@@ -121,15 +142,15 @@ class MainController: UIViewController {
             button.translatesAutoresizingMaskIntoConstraints = false
             button.backgroundColor = .white
             button.layer.cornerRadius = buttonWidth / 2
+            button.tintColor = UIColor(hex: "D44853")
             
             button.layer.shadowColor = UIColor(hex: "676767").cgColor
             button.layer.shadowOffset = CGSize(width: 0, height: 2)
             button.layer.shadowOpacity = 0.25
             button.layer.shadowRadius = 4
-//            button.layer.masksToBounds = false
             
             var config = UIButton.Configuration.plain()
-            config.image = UIImage(systemName: "barcode.viewfinder")
+            config.image = UIImage(systemName: "qrcode.viewfinder")
             
             config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 32, weight: .regular)
             button.configuration = config
@@ -163,13 +184,16 @@ class MainController: UIViewController {
 
 // 의존 분리를 위한 Delegate
 protocol LottoCellViewDelegate: AnyObject {
-    func didTapPopButton(sourceView: UIView, lotto: Lotto)
+    func didTapPopButton(sourceView: UIView, lotto: Lotto?, menu: [MenuItem])
     func requestCameraPermission(completionHandler: @escaping (Bool) -> Void)
 }
 
 // 의존 분리 reloadData를 통해 TableView를 업데이트
 protocol PopOverContentViewControllerDelegate: AnyObject {
+    // tableView Custom Cell moreButton - 삭제하기
     func didTapDeleteButton(lotto: Lotto)
+    // topAppBar moreButton delegate - 로또 결과
+    func didTapLottoResultButton()
 }
 
 extension MainController: UITableViewDelegate, UITableViewDataSource {
@@ -224,10 +248,21 @@ extension MainController: LottoCellViewDelegate {
         }
     }
     
-    func didTapPopButton(sourceView: UIView, lotto: Lotto) {
-        let popVC = PopOverContentViewController(lotto: lotto)
+    func didTapPopButton(sourceView: UIView, lotto: Lotto? = nil, menu: [MenuItem]) {
+        // 연산 프로퍼티는 인스턴스 생성을 계속해서 popOver가 전체시트로 나옴
+        let popVC: PopOverContentViewController = {
+            if let lotto = lotto {
+                return PopOverContentViewController(lotto: lotto, menu: menu)
+            }else {
+                return PopOverContentViewController(menu: menu)
+            }
+        }()
+        
         popVC.modalPresentationStyle = .popover
-        popVC.preferredContentSize = CGSize(width: 180, height: 100)
+        var height: CGFloat { // 각 항목마다 50씩 높이 추가
+            return CGFloat(menu.count * 50)
+        }
+        popVC.preferredContentSize = CGSize(width: 180, height: height)
         popVC.delegate = self
         
         if let popOverController = popVC.popoverPresentationController {
@@ -252,5 +287,11 @@ extension MainController: PopOverContentViewControllerDelegate {
         DataManager.shared.deleteLotto(lotto: lotto)
         DataManager.shared.updateLottos()
         tableView.reloadData()
+    }
+    
+    func didTapLottoResultButton() {
+        let lottoResultVC = UINavigationController(rootViewController: LottoResultController())
+        
+        self.present(lottoResultVC, animated: true)
     }
 }
