@@ -35,4 +35,20 @@ class UICommon {
         // 뷰에 추가
         view.layer.insertSublayer(gradientLayer, at: 0)
     }
+    
+    // TODO: Lotto 숫자 각각 한개에 해당
+    static func getLottoNumber(num: Int) -> UILabel {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "\(num)"
+        label.textAlignment = .center
+        label.font = .boldSystemFont(ofSize: 14)
+        label.textColor = .white
+        label.layer.cornerRadius = 20
+        label.clipsToBounds = true
+        label.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        label.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        label.backgroundColor = UIColor.getLottoColor(for: num)
+        return label
+    }
 }
