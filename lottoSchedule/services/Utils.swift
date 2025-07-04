@@ -21,4 +21,19 @@ extension UIColor {
         
         self.init(red: r, green: g, blue: b, alpha: 1.0)
     }
+    
+    static func getLottoColor(for num: Int) -> UIColor {
+        switch num {
+        case 1...10:
+            return UIColor.systemYellow
+        case 11...20:
+            return UIColor.systemBlue
+        case 21...30:
+            return UIColor.systemGreen
+        case 31...40:
+            return UIColor.systemTeal
+        default:
+            return UIColor.systemIndigo
+        }
+    }
 }

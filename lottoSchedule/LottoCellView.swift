@@ -26,7 +26,7 @@ class LottoCellView: UITableViewCell {
         label.clipsToBounds = true
         label.widthAnchor.constraint(equalToConstant: 40).isActive = true
         label.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        label.backgroundColor = getLottoColor(for: num)
+        label.backgroundColor = UIColor.getLottoColor(for: num)
         return label
     }
 
@@ -148,21 +148,6 @@ class LottoCellView: UITableViewCell {
         
         let dateString = formatter.string(from: date)
         dateLabel.text = dateString
-    }
-    
-    private func getLottoColor(for num: Int) -> UIColor {
-        switch num {
-        case 1...10:
-            return UIColor.systemYellow
-        case 11...20:
-            return UIColor.systemBlue
-        case 21...30:
-            return UIColor.systemGreen
-        case 31...40:
-            return UIColor.systemTeal
-        default:
-            return UIColor.systemIndigo
-        }
     }
     
     // 초기화
