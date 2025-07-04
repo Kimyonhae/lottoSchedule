@@ -19,7 +19,6 @@ class LottoResultController: UIViewController {
         stack.distribution = .fill
         stack.backgroundColor = .white
         stack.spacing = 8
-        stack.tag = 20001
         
         stack.layer.shadowColor = UIColor(hex: "676767").cgColor
         stack.layer.shadowOffset = CGSize(width: 0, height: 0)
