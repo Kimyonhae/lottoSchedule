@@ -1,0 +1,272 @@
+//
+//  LottoResultController.swift
+//  lottoSchedule
+//
+//  Created by 김용해 on 7/3/25.
+//
+// topContainerStackView tag: 20001
+import Foundation
+import UIKit
+
+class LottoResultController: UIViewController {
+    private var viewModel: LottoResultViewModel = .init()
+    
+    // TODO: 로또 결과 box
+    lazy var containerView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.distribution = .fill
+        stack.backgroundColor = .white
+        stack.spacing = 8
+        stack.tag = 20001
+        
+        stack.layer.shadowColor = UIColor(hex: "676767").cgColor
+        stack.layer.shadowOffset = CGSize(width: 0, height: 0)
+        stack.layer.shadowOpacity = 0.25
+        stack.layer.shadowRadius = 4
+        stack.layer.cornerRadius = 12
+        
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 8, right: 16)
+        
+        return stack
+    }()
+    
+    // TODO: 하단 저장 버튼
+    lazy var saveButton: UIButton = {
+        let btn = UIButton()
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.setTitle("저장", for: .normal)
+        btn.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        btn.backgroundColor = UIColor(hex: "D44853")
+        btn.layer.cornerRadius = 14
+        return btn
+    }()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // 기본 셋업
+        UICommon.setUpGradientBackground(view: self.view) // 배경색
+        // navigation 제목 및 leftButton
+        setUpConfigure()
+        // 당첨 결과 뷰
+        setUpLottoResultConfigure()
+        // 첫번째 금액
+        let totalMoney = getLottoInfo(title: "전체 금액", money: "282억 6천만원", superview: containerView)
+        // 2번재 금액
+        let _ = getLottoInfo(title: "1인당 1등 당첨 금액", money: "21억 8천만원", superview: totalMoney)
+        // 버튼 뷰
+        setUpButton()
+        // date 정보
+        setUpDateView(with: "2025년 6월 28일 추첨되었습니다")
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+    }
+    
+    // TODO: 기본 셋업
+    private func setUpConfigure() {
+        self.navigationItem.title = "로또 결과"
+        self.navigationItem.largeTitleDisplayMode = .never
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeScreen))
+    }
+    
+    // TODO: dismiss method
+    @objc func closeScreen() {
+        self.dismiss(animated: true)
+    }
+    // TODO: 당첨 결과 뷰
+    private func setUpLottoResultConfigure() {
+        let roundLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            label.text = "제 1168회"
+            return label
+        }()
+        
+        let descriptionLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.textColor = UIColor(hex: "D44853")
+            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            label.text = "스크롤 가능해요"
+            label.textAlignment = .right
+            
+            return label
+        }()
+        
+        // 내부 stackView <- (label - label)
+        let topStackView: UIStackView = {
+            let stack = UIStackView(arrangedSubviews: [roundLabel, descriptionLabel])
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            stack.spacing = 8
+            stack.axis = .horizontal
+            return stack
+        }()
+        
+        // Divider
+        let divider: UIView = {
+            let view = UIView()
+            view.backgroundColor = UIColor.systemGray4
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
+        }()
+        
+        // 하단 TableView (lotto - 6)
+        lazy var lottoTableView: UITableView = {
+            let tableView = UITableView()
+            tableView.translatesAutoresizingMaskIntoConstraints = false
+            tableView.separatorStyle = .none
+            tableView.showsVerticalScrollIndicator = false
+            tableView.register(LottoNumberCell.self, forCellReuseIdentifier: LottoNumberCell.reuseIdentifier)
+            return tableView
+        }()
+        
+        lottoTableView.delegate = self
+        lottoTableView.dataSource = self
+        
+        containerView.addArrangedSubview(topStackView)
+        containerView.addArrangedSubview(divider)
+        containerView.addArrangedSubview(lottoTableView)
+        
+        self.view.addSubview(containerView)
+        
+        NSLayoutConstraint.activate([
+            // container
+            containerView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
+            containerView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
+            // topStackView
+            roundLabel.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.5),
+            // divider
+            divider.heightAnchor.constraint(equalToConstant: 1),
+            //bottomStackView
+            lottoTableView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            lottoTableView.heightAnchor.constraint(equalToConstant: 80)
+        ])
+    }
+    
+    // TODO: 금액 정보 뷰
+    private func getLottoInfo(title: String, money: String, superview: UIView) -> UIStackView {
+        let titleLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            label.text = title
+            return label
+        }()
+        
+        // Divider
+        let divider: UIView = {
+            let view = UIView()
+            view.backgroundColor = UIColor.systemGray4
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
+        }()
+        
+        let moneyLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+            label.tintColor = UIColor(hex: "AAAAAA")
+            label.text = money
+            return label
+        }()
+        
+        let infoContainer: UIStackView = {
+            let stack = UIStackView()
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            stack.axis = .vertical
+            stack.distribution = .fillProportionally
+            stack.backgroundColor = .white
+            stack.spacing = 8
+            
+            stack.layer.shadowColor = UIColor(hex: "676767").cgColor
+            stack.layer.shadowOffset = CGSize(width: 0, height: 0)
+            stack.layer.shadowOpacity = 0.25
+            stack.layer.shadowRadius = 4
+            stack.layer.cornerRadius = 12
+            
+            stack.isLayoutMarginsRelativeArrangement = true
+            stack.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 8, right: 16)
+            
+            return stack
+        }()
+        
+        
+        infoContainer.addArrangedSubview(titleLabel)
+        infoContainer.addArrangedSubview(divider)
+        infoContainer.addArrangedSubview(moneyLabel)
+        
+        self.view.addSubview(infoContainer)
+        
+        NSLayoutConstraint.activate([
+            infoContainer.topAnchor.constraint(equalTo: superview.bottomAnchor, constant: 20),
+            infoContainer.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
+            infoContainer.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
+            divider.heightAnchor.constraint(equalToConstant: 1),
+        ])
+        
+        return infoContainer
+    }
+    
+    // TODO: 날짜 정보 뷰
+    private func setUpDateView(with text: String) {
+        let dateLabel: UILabel = {
+            let date = UILabel()
+            date.translatesAutoresizingMaskIntoConstraints = false
+            date.text = text
+            date.tintColor = UIColor(hex: "AAAAAA")
+            date.font = .systemFont(ofSize: 14, weight: .semibold)
+            
+            return date
+        }()
+        
+        self.view.addSubview(dateLabel)
+        NSLayoutConstraint.activate([
+            dateLabel.bottomAnchor.constraint(equalTo: saveButton.topAnchor, constant: -10),
+            dateLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
+            dateLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
+        ])
+    }
+    
+    // TODO: 저장 버튼
+    private func setUpButton() {
+        saveButton.addAction(UIAction { [weak self] _ in
+            self?.dismiss(animated: true) // 닫기
+        }, for: .touchUpInside)
+        
+        self.view.addSubview(saveButton)
+        
+        NSLayoutConstraint.activate([
+            saveButton.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            saveButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
+            saveButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
+            saveButton.heightAnchor.constraint(equalToConstant: 52)
+        ])
+    }
+    
+}
+
+// LottoResult Cell View on delegate
+extension LottoResultController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        5
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: LottoNumberCell.reuseIdentifier, for: indexPath) as? LottoNumberCell else { return UITableViewCell()
+        }
+        cell.selectionStyle = .none
+        cell.configure(with: [3,11,17,23,32,42], rank: "1등")
+        return cell
+    }
+    
+    
+}
+
+
+
