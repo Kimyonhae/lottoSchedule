@@ -8,8 +8,8 @@
 import UIKit
 import CoreData
 
-class DataManager {
-    static let shared = DataManager()
+class LottoDataManager {
+    static let shared = LottoDataManager()
     var lottos: [Lotto] = [] // 전역으로 사용할 Data
     private init() {}
     private var persistentContainer: NSPersistentContainer? {
