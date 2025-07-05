@@ -66,14 +66,23 @@ class PopOverContentViewController: UITableViewController {
                 if let lotto = lotto {
                     delegate?.didTapDeleteButton(lotto: lotto)
                 }
-            case .destination:
+            case .destinationOnLottoResultController:
                 print("페이지 이동을 할거에요")
-            self.dismiss(animated: true) { [weak self] in
-                self?.delegate?.didTapLottoResultButton()
+                self.dismiss(animated: true) { [weak self] in
+                    // 이번주 데이터가 없으면 destination 실패
+                    guard !LottoDataManager.shared.lottos.isEmpty else {
+                        return
+                    }
+                    self?.delegate?.didTapLottoDestinationForResult()
+                }
+                return
+            case .destinationOnSavedLottoController:
+                print("페이지 이동을 할거에요")
+                self.dismiss(animated: true) { [weak self] in
+                    self?.delegate?.didTapLottoDestinationForStorage()
+                }
+                return
             }
-            
-            return
-        }
         self.dismiss(animated: true)
     }
 }

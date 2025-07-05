@@ -28,7 +28,7 @@ class MainController: UIViewController {
             object: nil
         )
         // 초기 lottos 가져오기
-        DataManager.shared.updateLottos()
+        LottoDataManager.shared.updateLottos()
         // Gradient 배경 설정
         UICommon.setUpGradientBackground(view: self.view)
         // 상단 AppBar Navigation
@@ -87,7 +87,8 @@ class MainController: UIViewController {
         
         // popover Button
         let moreButton = getTopbarButton(iconName: "ellipsis.circle.fill", menu: [
-            MenuItem(title: "로또 결과", iconName: "square.and.pencil.circle", action: .destination)
+            MenuItem(title: "로또 결과", iconName: "square.and.pencil.circle", action: .destinationOnLottoResultController),
+            MenuItem(title: "보관함", iconName: "square.and.pencil.circle", action: .destinationOnSavedLottoController)
         ])
         
         let appBarNavigation: UIStackView = {
@@ -192,14 +193,16 @@ protocol LottoCellViewDelegate: AnyObject {
 protocol PopOverContentViewControllerDelegate: AnyObject {
     // tableView Custom Cell moreButton - 삭제하기
     func didTapDeleteButton(lotto: Lotto)
-    // topAppBar moreButton delegate - 로또 결과
-    func didTapLottoResultButton()
+    // topAppBar moreButton -> LottoResultController 목적지로 이동
+    func didTapLottoDestinationForResult()
+    // topAppBar moreButton -> SavedLottoViewController 목적지로 이동
+    func didTapLottoDestinationForStorage()
 }
 
 extension MainController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let lottos = DataManager.shared.lottos
+        let lottos = LottoDataManager.shared.lottos
         return lottos.isEmpty ? 0 : lottos.count
     }
     
@@ -208,7 +211,7 @@ extension MainController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let lottos = DataManager.shared.lottos
+        let lottos = LottoDataManager.shared.lottos
         guard let cell = tableView.dequeueReusableCell(withIdentifier: LottoCellView.identifier, for: indexPath) as? LottoCellView else {
             return UITableViewCell()
         }
@@ -283,17 +286,26 @@ extension MainController: UIPopoverPresentationControllerDelegate {
 
 // PopOver delete method 구현부
 extension MainController: PopOverContentViewControllerDelegate {
+
     func didTapDeleteButton(lotto: Lotto) {
-        DataManager.shared.deleteLotto(lotto: lotto)
-        DataManager.shared.updateLottos()
+        LottoDataManager.shared.deleteLotto(lotto: lotto)
+        LottoDataManager.shared.updateLottos()
         tableView.reloadData()
     }
     
-    func didTapLottoResultButton() {
+    func didTapLottoDestinationForResult() {
         let lottoResultVC = UINavigationController(
             rootViewController: LottoResultController()
         )
         lottoResultVC.modalPresentationStyle = .fullScreen
         self.present(lottoResultVC, animated: true)
+    }
+    
+    func didTapLottoDestinationForStorage() {
+        let savedLottoVC = UINavigationController(
+            rootViewController: SavedLottoViewController()
+        )
+        savedLottoVC.modalPresentationStyle = .fullScreen
+        self.present(savedLottoVC, animated: true)
     }
 }
