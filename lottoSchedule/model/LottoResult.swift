@@ -10,6 +10,9 @@ import Foundation
 class LottoResult: Codable {
     let returnValue: String          // Api 결과
     let drwNo: Int?                  // 회차 번호
+    let totSellamnt: Int?            // 전체 금액
+    let firstWinamnt: Int?           // 1인당 당첨 금액
+    let firstAccumamnt: Int?         // 1등 총 당첨 금액
     let drwNoDate: String?           // 당첨 날짜
     let drwtNo1: Int?                // 당첨번호 1
     let drwtNo2: Int?                // 당첨번호 2
