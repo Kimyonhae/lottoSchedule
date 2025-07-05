@@ -192,8 +192,8 @@ extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
 extension ScannerViewController: ScannerViewDelegate {
     func scannerCompletion(with lotto: [Int], round: String) {
         DispatchQueue.main.async {
-            DataManager.shared.createLotto(numbers: lotto, round: round)
-            DataManager.shared.updateLottos()
+            LottoDataManager.shared.createLotto(numbers: lotto, round: round)
+            LottoDataManager.shared.updateLottos()
             self.dismiss(animated: true)
         }
     }
