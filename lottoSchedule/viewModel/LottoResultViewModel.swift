@@ -23,9 +23,9 @@ final class LottoResultViewModel {
     var onRankedUpdated: (([String]) -> Void)? // rank를 뷰에 업데이트 하기 위한 클로저
     
     init() {
-        self.weekltyResult = DataManager.shared.lottos
+        self.weekltyResult = LottoDataManager.shared.lottos
         if let firstRound = weekltyResult.first?.round {
-            self.getLottoResult(round: Int(firstRound)) // Test
+            self.getLottoResult(round: Int(firstRound))
         }        
     }
     
