@@ -49,6 +49,14 @@ class ScannerViewModel: ObservableObject {
                 
                 let round = try doc.select("span.key_clr1").text() // 회차 number
                 let numbers = try elements.map { try $0.text() }
+                let lottoResult = try doc.select("td.result").text() // 결과 있으면 string 없으면 ""
+                
+                // 필터링 - 미추첨 복권만 CoreData에 등록
+                if !lottoResult.isEmpty {
+                    print("현 시점 미추첨 복권이 아닙니다")
+                    self.scannerDelegate.scannerNotAvailableLotto()
+                    return
+                }
                 
                 // { 필터링 [6개] , 회차 수 }를 가진 타입으로 변환
                 let chunkedList = stride(from: 0, to: numbers.count, by: 6).map {
@@ -73,4 +81,6 @@ class ScannerViewModel: ObservableObject {
 protocol ScannerViewDelegate: AnyObject {
     // 6개의 숫자를 coreData 저장 전 ScannerViewController랑 역활을 분리
     func scannerCompletion(with lotto: [Int], round: String)
+    // 미추첨 복권이 아닌경우 필터링 함수
+    func scannerNotAvailableLotto()
 }

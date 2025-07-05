@@ -37,3 +37,44 @@ extension UIColor {
         }
     }
 }
+
+extension String {
+    // Int -> 화폐 가치 형변환
+    static func formatCurrency(_ amount: Int) -> String {
+        let eok = amount / 100000000
+        let man = (amount % 100000000) / 10000
+        let won = amount % 10000
+        
+        var components: [String] = []
+        if eok > 0 {
+            components.append("\(eok)억")
+        }
+        if man > 0 {
+            components.append("\(man)만")
+        }
+        if won > 0 {
+            components.append("\(won)원")
+        }
+        
+        // 아무것도 없으면 "0원"
+        return components.isEmpty ? "0원" : components.joined(separator: " ")
+    }
+}
+
+
+extension Date {
+    static func dateResultFormatter(with dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-M-d"
+
+        let outputFormatter = DateFormatter()
+        outputFormatter.locale = Locale(identifier: "ko_KR")
+        outputFormatter.dateFormat = "yyyy년 M월 d일"
+
+        if let date = inputFormatter.date(from: dateString) {
+            return outputFormatter.string(from: date)
+        } else {
+            return dateString
+        }
+    }
+}

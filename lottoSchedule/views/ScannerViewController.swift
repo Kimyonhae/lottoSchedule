@@ -197,4 +197,23 @@ extension ScannerViewController: ScannerViewDelegate {
             self.dismiss(animated: true)
         }
     }
+    
+    func scannerNotAvailableLotto() {
+        DispatchQueue.main.async {
+            // 닫기
+            self.dismiss(animated: true) {
+                // showr Alert on
+                let alert = UIAlertController(title: "알림", message: "이미 추첨된 회차입니다", preferredStyle: .alert)
+                
+                // add action
+                alert.addAction(UIAlertAction(title: "확인", style: .cancel))
+
+                if let mainVC = UIApplication.shared.connectedScenes
+                    .compactMap({( $0 as? UIWindowScene)?.keyWindow })
+                    .first?.rootViewController {
+                    mainVC.present(alert, animated: true)
+                }
+            }
+        }
+    }
 }

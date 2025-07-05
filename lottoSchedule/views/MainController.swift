@@ -290,7 +290,9 @@ extension MainController: PopOverContentViewControllerDelegate {
     }
     
     func didTapLottoResultButton() {
-        let lottoResultVC = UINavigationController(rootViewController: LottoResultController())
+        let lottoResultVC = UINavigationController(
+            rootViewController: LottoResultController()
+        )
         lottoResultVC.modalPresentationStyle = .fullScreen
         self.present(lottoResultVC, animated: true)
     }

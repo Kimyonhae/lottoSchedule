@@ -32,6 +32,15 @@ class LottoResultController: UIViewController {
         return stack
     }()
     
+    // TODO: 회차 UILabel
+    let roundLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.text = "제 0000회"
+        return label
+    }()
+    
     // TODO: 하단 저장 버튼
     lazy var saveButton: UIButton = {
         let btn = UIButton()
@@ -41,6 +50,16 @@ class LottoResultController: UIViewController {
         btn.backgroundColor = UIColor(hex: "D44853")
         btn.layer.cornerRadius = 14
         return btn
+    }()
+    // TODO: 하단 DateLabel
+    let dateLabel: UILabel = {
+        let date = UILabel()
+        date.translatesAutoresizingMaskIntoConstraints = false
+        date.text = "잠시 기다려주세요..."
+        date.tintColor = UIColor(hex: "AAAAAA")
+        date.font = .systemFont(ofSize: 14, weight: .semibold)
+        
+        return date
     }()
     
     override func viewDidLoad() {
@@ -52,9 +71,23 @@ class LottoResultController: UIViewController {
         // 당첨 결과 뷰
         setUpLottoResultConfigure()
         // 첫번째 금액
-        let totalMoney = getLottoInfo(title: "전체 금액", money: "282억 6천만원", superview: containerView)
+        let (totSellamntLabel,totalMoney) = getLottoInfo(title: "전체 금액", money: "...", superview: containerView)
         // 2번재 금액
-        let _ = getLottoInfo(title: "1인당 1등 당첨 금액", money: "21억 8천만원", superview: totalMoney)
+        let (firstAccumamntLabel ,firstAccumamnt) = getLottoInfo(title: "1등 총 당첨 금액", money: "...", superview: totalMoney)
+        // 3번재 금액
+        let (firstWinamnt,_) = getLottoInfo(title: "1인당 1등 당첨 금액", money: "...", superview: firstAccumamnt)
+        // 금액 Label 값 바인딩
+        viewModel.onLottoResultInfoUpdated = { [weak self] in
+            guard let lottoResultInfo = self?.viewModel.lottoResultInfo else { return }
+            
+            DispatchQueue.main.async {
+                self?.roundLabel.text = "제 \(lottoResultInfo.round)회"
+                totSellamntLabel.text = String.formatCurrency(lottoResultInfo.totSellamnt)
+                firstAccumamntLabel.text = String.formatCurrency(lottoResultInfo.firstAccumamnt)
+                firstWinamnt.text = String.formatCurrency(lottoResultInfo.firstWinamnt)
+                self?.dateLabel.text = "\(Date.dateResultFormatter(with: lottoResultInfo.date)) 추첨되었습니다"
+            }
+        }
         // 버튼 뷰
         setUpButton()
         // date 정보
@@ -78,14 +111,6 @@ class LottoResultController: UIViewController {
     }
     // TODO: 당첨 결과 뷰
     private func setUpLottoResultConfigure() {
-        let roundLabel: UILabel = {
-            let label = UILabel()
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-            label.text = "제 1168회"
-            return label
-        }()
-        
         let descriptionLabel: UILabel = {
             let label = UILabel()
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -124,6 +149,13 @@ class LottoResultController: UIViewController {
             return tableView
         }()
         
+        // viewModel ranks 뷰에 연결
+        viewModel.onRankedUpdated = { [weak self] _ in
+            DispatchQueue.main.async {
+                lottoTableView.reloadData() // 또는 lottoTableView.reloadData()
+            }
+        }
+        
         lottoTableView.delegate = self
         lottoTableView.dataSource = self
         
@@ -149,7 +181,7 @@ class LottoResultController: UIViewController {
     }
     
     // TODO: 금액 정보 뷰
-    private func getLottoInfo(title: String, money: String, superview: UIView) -> UIStackView {
+    private func getLottoInfo(title: String, money: String, superview: UIView) -> (UILabel ,UIStackView) {
         let titleLabel: UILabel = {
             let label = UILabel()
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -209,20 +241,11 @@ class LottoResultController: UIViewController {
             divider.heightAnchor.constraint(equalToConstant: 1),
         ])
         
-        return infoContainer
+        return (moneyLabel, infoContainer)
     }
     
     // TODO: 날짜 정보 뷰
     private func setUpDateView(with text: String) {
-        let dateLabel: UILabel = {
-            let date = UILabel()
-            date.translatesAutoresizingMaskIntoConstraints = false
-            date.text = text
-            date.tintColor = UIColor(hex: "AAAAAA")
-            date.font = .systemFont(ofSize: 14, weight: .semibold)
-            
-            return date
-        }()
         
         self.view.addSubview(dateLabel)
         NSLayoutConstraint.activate([
@@ -253,19 +276,18 @@ class LottoResultController: UIViewController {
 // LottoResult Cell View on delegate
 extension LottoResultController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        5
+        viewModel.weekltyResult.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: LottoNumberCell.reuseIdentifier, for: indexPath) as? LottoNumberCell else { return UITableViewCell()
         }
         cell.selectionStyle = .none
-        cell.configure(with: [3,11,17,23,32,42], rank: "1등")
+        cell.configure(
+            with: viewModel.weekltyResult[indexPath.row].numbers as! [Int],
+            rank: indexPath.row < viewModel.ranks.count ? viewModel.ranks[indexPath.row] : "결과 없음"
+        )
+        
         return cell
     }
-    
-    
 }
-
-
-

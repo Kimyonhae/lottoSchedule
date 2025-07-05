@@ -43,7 +43,6 @@ final class LottoCheckNotification {
                     if let mainVC = UIApplication.shared.connectedScenes
                         .compactMap({( $0 as? UIWindowScene)?.keyWindow })
                         .first?.rootViewController {
-                        print("present 안됨?")
                         mainVC.present(alert, animated: true)
                     }
                 }
