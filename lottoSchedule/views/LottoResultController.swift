@@ -258,9 +258,6 @@ class LottoResultController: UIViewController {
     // TODO: 저장 버튼
     private func setUpButton() {
         saveButton.addAction(UIAction { [weak self] _ in
-            print(self?.viewModel.weekltyResult ?? [])
-            print(self?.viewModel.lottoResultInfo ?? [])
-            print(self?.viewModel.ranks ?? [])
             if let weekltyResult = self?.viewModel.weekltyResult,
                let lottoResultInfo = self?.viewModel.lottoResultInfo,
                let ranks = self?.viewModel.ranks {
@@ -270,8 +267,6 @@ class LottoResultController: UIViewController {
                     ranks: ranks
                 )
             }
-            
-            SavedLottoDataManager.shared.readLotto()
             self?.dismiss(animated: true) // 닫기
         }, for: .touchUpInside)
         
