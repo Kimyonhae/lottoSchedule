@@ -159,12 +159,14 @@ class MainController: UIViewController {
             // Touch Action
             button.addAction(UIAction {[weak self] _ in
                 // Camera Permission Check
-                self?.requestCameraPermission { grant in
-                    if grant { // 권한이 있는 경우
-                        guard let self = self else { return }
-                        let scannerVC = UINavigationController(rootViewController: ScannerViewController())
-                        scannerVC.modalPresentationStyle = .fullScreen
-                        self.present(scannerVC, animated: true)
+                DispatchQueue.main.async {
+                    self?.requestCameraPermission { grant in
+                        if grant { // 권한이 있는 경우
+                            guard let self = self else { return }
+                            let scannerVC = UINavigationController(rootViewController: ScannerViewController())
+                            scannerVC.modalPresentationStyle = .fullScreen
+                            self.present(scannerVC, animated: true)
+                        }
                     }
                 }
             }, for: .touchUpInside)
@@ -188,7 +190,6 @@ protocol LottoCellViewDelegate: AnyObject {
     func didTapPopButton(sourceView: UIView, lotto: Lotto?, menu: [MenuItem])
     func requestCameraPermission(completionHandler: @escaping (Bool) -> Void)
 }
-
 // 의존 분리 reloadData를 통해 TableView를 업데이트
 protocol PopOverContentViewControllerDelegate: AnyObject {
     // tableView Custom Cell moreButton - 삭제하기
