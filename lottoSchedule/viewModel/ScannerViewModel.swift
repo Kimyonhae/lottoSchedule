@@ -8,6 +8,30 @@
 import Foundation
 import SwiftSoup
 
+enum ScannerNetworkError: Error {
+    case offline
+    case timeout
+    case invalidURL
+    case secureConnectionFailed
+    case unknown(Error)
+
+    var userMessage: String {
+        switch self {
+        case .offline:
+            return "인터넷에 연결되어 있지 않습니다."
+        case .timeout:
+            return "요청 시간이 초과되었습니다."
+        case .invalidURL:
+            return "잘못된 요청입니다."
+        case .secureConnectionFailed:
+            return "보안 연결에 실패했습니다."
+        case .unknown(let error):
+            print("unknow : \(error.localizedDescription)")
+            return "개발자에게 문의 해주세요"
+        }
+    }
+}
+
 /// **ScannerViewController의 viewModel**
 /// - Parameter :
 ///     - scanResult: 로또 URL
@@ -26,8 +50,22 @@ class ScannerViewModel: ObservableObject {
         print(url)
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
                 
-            if let err = error {
-                print("error : \(err)")
+            if let err = error as NSError? {
+                let networkError: ScannerNetworkError
+                switch err.code {
+                case NSURLErrorNotConnectedToInternet:
+                    networkError = .offline
+                case NSURLErrorTimedOut:
+                    networkError = .timeout
+                case NSURLErrorUnsupportedURL, NSURLErrorBadURL:
+                    networkError = .invalidURL
+                default:
+                    networkError = .unknown(err)
+                }
+
+                DispatchQueue.main.async {
+                    self.scannerDelegate?.scannerDidFail(with: networkError)
+                }
                 return
             }
             
@@ -52,7 +90,7 @@ class ScannerViewModel: ObservableObject {
                 let lottoResult = try doc.select("td.result").text() // 결과 있으면 string 없으면 ""
                 
                 // 필터링 - 미추첨 복권만 CoreData에 등록
-                if !lottoResult.isEmpty {
+                if lottoResult.isEmpty {
                     print("현 시점 미추첨 복권이 아닙니다")
                     self.scannerDelegate.scannerNotAvailableLotto()
                     return
@@ -83,4 +121,6 @@ protocol ScannerViewDelegate: AnyObject {
     func scannerCompletion(with lotto: [Int], round: String)
     // 미추첨 복권이 아닌경우 필터링 함수
     func scannerNotAvailableLotto()
+    // 네트워크 Error 대응 
+    func scannerDidFail(with error: ScannerNetworkError)
 }

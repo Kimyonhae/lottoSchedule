@@ -7,13 +7,6 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>로또 결과 이미지를 불러오기 위해 앨범 접근 권한이 필요합니다
-</string>
-	<key>NSCameraUsageDescription</key>
-	<string>로또 번호를 스캔하기 위해 카메라 접근 권한이 필요합니다.
-로또 번호를 스캔하기 위해 카메라 접근 권한이 필요합니다
-</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -88,7 +88,7 @@ class MainController: UIViewController {
         // popover Button
         let moreButton = getTopbarButton(iconName: "ellipsis.circle.fill", menu: [
             MenuItem(title: "로또 결과", iconName: "square.and.pencil.circle", action: .destinationOnLottoResultController),
-            MenuItem(title: "보관함", iconName: "square.and.pencil.circle", action: .destinationOnSavedLottoController)
+            MenuItem(title: "보관함", iconName: "folder.circle", action: .destinationOnSavedLottoController)
         ])
         
         let appBarNavigation: UIStackView = {
@@ -159,11 +159,12 @@ class MainController: UIViewController {
             // Touch Action
             button.addAction(UIAction {[weak self] _ in
                 // Camera Permission Check
-                DispatchQueue.main.async {
-                    self?.requestCameraPermission { grant in
-                        if grant { // 권한이 있는 경우
+                self?.requestCameraPermission { grant in
+                    if grant { // 권한이 있는 경우
+                        DispatchQueue.main.async {
                             guard let self = self else { return }
                             let scannerVC = UINavigationController(rootViewController: ScannerViewController())
+                            
                             scannerVC.modalPresentationStyle = .fullScreen
                             self.present(scannerVC, animated: true)
                         }
@@ -185,12 +186,14 @@ class MainController: UIViewController {
     }
 }
 
-// 의존 분리를 위한 Delegate
+// 카메라 권한 설정 및 moreButton의 list 개수 delegate 패턴
 protocol LottoCellViewDelegate: AnyObject {
+    // moreButton 각 Item list
     func didTapPopButton(sourceView: UIView, lotto: Lotto?, menu: [MenuItem])
+    // 카메라 권한
     func requestCameraPermission(completionHandler: @escaping (Bool) -> Void)
 }
-// 의존 분리 reloadData를 통해 TableView를 업데이트
+// 의존 분리 reloadData를 통해 TableView를 업데이트 moreButton에 대한 delegate 패턴
 protocol PopOverContentViewControllerDelegate: AnyObject {
     // tableView Custom Cell moreButton - 삭제하기
     func didTapDeleteButton(lotto: Lotto)
@@ -198,6 +201,12 @@ protocol PopOverContentViewControllerDelegate: AnyObject {
     func didTapLottoDestinationForResult()
     // topAppBar moreButton -> SavedLottoViewController 목적지로 이동
     func didTapLottoDestinationForStorage()
+}
+
+// Alert와 관련된 delegate 패턴
+protocol AlertContentViewControllerDelegate: AnyObject {
+    // call if your Lottos is Empty
+    func didTapOnIsEmptyLottos()
 }
 
 extension MainController: UITableViewDelegate, UITableViewDataSource {
@@ -229,7 +238,6 @@ extension MainController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-// PopOver 구현부
 extension MainController: LottoCellViewDelegate {
     // TODO: Camera 요청 권한을 통해 setUpCameraConfigure 실행
     func requestCameraPermission(completionHandler: @escaping (Bool) -> Void) {
@@ -267,7 +275,8 @@ extension MainController: LottoCellViewDelegate {
             return CGFloat(menu.count * 50)
         }
         popVC.preferredContentSize = CGSize(width: 180, height: height)
-        popVC.delegate = self
+        popVC.popDelegate = self
+        popVC.alertDelegate = self
         
         if let popOverController = popVC.popoverPresentationController {
             popOverController.sourceView = sourceView
@@ -285,7 +294,6 @@ extension MainController: UIPopoverPresentationControllerDelegate {
     }
 }
 
-// PopOver delete method 구현부
 extension MainController: PopOverContentViewControllerDelegate {
 
     func didTapDeleteButton(lotto: Lotto) {
@@ -308,5 +316,20 @@ extension MainController: PopOverContentViewControllerDelegate {
         )
         savedLottoVC.modalPresentationStyle = .fullScreen
         self.present(savedLottoVC, animated: true)
+    }
+}
+
+extension MainController: AlertContentViewControllerDelegate {
+    func didTapOnIsEmptyLottos() {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(
+                title: "저장된 로또가 없습니다",
+                message: "로또 번호를 먼저 등록해야 당첨 결과를 확인할 수 있어요",
+                preferredStyle: .alert
+            )
+            // add action
+            alert.addAction(UIAlertAction(title: "확인", style: .cancel))
+            self.present(alert, animated: true)
+        }
     }
 }

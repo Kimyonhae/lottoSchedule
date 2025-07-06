@@ -9,7 +9,8 @@ import UIKit
 
 class PopOverContentViewController: UITableViewController {
     var lotto: Lotto? = nil
-    weak var delegate: PopOverContentViewControllerDelegate?
+    weak var popDelegate: PopOverContentViewControllerDelegate?
+    weak var alertDelegate: AlertContentViewControllerDelegate?
     private let menu: [MenuItem]
     init(lotto: Lotto, menu: [MenuItem]) {
         self.lotto = lotto
@@ -64,22 +65,22 @@ class PopOverContentViewController: UITableViewController {
             case .delete:
                 print("hello delete!!")
                 if let lotto = lotto {
-                    delegate?.didTapDeleteButton(lotto: lotto)
+                    self.popDelegate?.didTapDeleteButton(lotto: lotto)
                 }
             case .destinationOnLottoResultController:
-                print("페이지 이동을 할거에요")
                 self.dismiss(animated: true) { [weak self] in
                     // 이번주 데이터가 없으면 destination 실패
                     guard !LottoDataManager.shared.lottos.isEmpty else {
+                        // 로또가 없으므로 MainController에게 전달해서 의존 분리
+                        self?.alertDelegate?.didTapOnIsEmptyLottos()
                         return
                     }
-                    self?.delegate?.didTapLottoDestinationForResult()
+                    self?.popDelegate?.didTapLottoDestinationForResult()
                 }
                 return
             case .destinationOnSavedLottoController:
-                print("페이지 이동을 할거에요")
                 self.dismiss(animated: true) { [weak self] in
-                    self?.delegate?.didTapLottoDestinationForStorage()
+                    self?.popDelegate?.didTapLottoDestinationForStorage()
                 }
                 return
             }

@@ -69,7 +69,7 @@ class ScannerViewController: UIViewController {
         self.view.backgroundColor = .white
         navigationItem.title = "로또 스캔"
         navigationItem.leftBarButtonItem?.tintColor = .black
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeScanner))
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeScanner))
     }
         
     // TODO: 카메라 화면 뷰
@@ -190,6 +190,8 @@ extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
 
 
 extension ScannerViewController: ScannerViewDelegate {
+    
+    
     func scannerCompletion(with lotto: [Int], round: String) {
         DispatchQueue.main.async {
             LottoDataManager.shared.createLotto(numbers: lotto, round: round)
@@ -204,6 +206,25 @@ extension ScannerViewController: ScannerViewDelegate {
             self.dismiss(animated: true) {
                 // showr Alert on
                 let alert = UIAlertController(title: "알림", message: "이미 추첨된 회차입니다", preferredStyle: .alert)
+                
+                // add action
+                alert.addAction(UIAlertAction(title: "확인", style: .cancel))
+
+                if let mainVC = UIApplication.shared.connectedScenes
+                    .compactMap({( $0 as? UIWindowScene)?.keyWindow })
+                    .first?.rootViewController {
+                    mainVC.present(alert, animated: true)
+                }
+            }
+        }
+    }
+    
+    func scannerDidFail(with error: ScannerNetworkError) {
+        DispatchQueue.main.async {
+            // 닫기
+            self.dismiss(animated: true) {
+                // showr Alert on
+                let alert = UIAlertController(title: "요청 실패", message: error.userMessage, preferredStyle: .alert)
                 
                 // add action
                 alert.addAction(UIAlertAction(title: "확인", style: .cancel))
