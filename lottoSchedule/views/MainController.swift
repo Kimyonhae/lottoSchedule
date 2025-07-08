@@ -19,7 +19,6 @@ class MainController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         // 알림 권한 - Notification
         NotificationCenter.default.addObserver(
             self,
@@ -37,7 +36,11 @@ class MainController: UIViewController {
         setUpLottoItems()
         // 하단 Scanner 버튼
         setUpScannerButton()
-        if FirstRunCheck.shared.isFirstRun { // first excute!
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !FirstRunCheck.shared.isFirstRun { // first excute!
             let firstVC = FirstRunController()
             firstVC.modalPresentationStyle = .fullScreen
             self.present(firstVC, animated: true)

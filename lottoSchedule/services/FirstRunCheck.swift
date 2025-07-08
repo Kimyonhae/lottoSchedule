@@ -15,10 +15,10 @@ class FirstRunCheck {
     
     var isFirstRun: Bool {
         let hasRunBefore = UserDefaults.standard.bool(forKey: KEY)
-        if !hasRunBefore {
+        if hasRunBefore {
             UserDefaults.standard.set(true, forKey: KEY)
         }
         
-        return !hasRunBefore
+        return hasRunBefore
     }
 }
