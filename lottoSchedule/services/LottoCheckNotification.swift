@@ -11,7 +11,7 @@ import UIKit
 
 final class LottoCheckNotification {
     static let shared = LottoCheckNotification()
-    
+    let identifier = "weekly_check_lotto"
     private init() {}
     
     // TODO: 권한이 없을 경우 권한 설정 페이지 이동
@@ -42,6 +42,7 @@ final class LottoCheckNotification {
                     }
                 }
             } else { // 권한이 있는 경우
+                self.removeScheduledNotifications()
                 self.scheduleWeeklyNotification() // 등록 해주기
             }
         }
@@ -52,6 +53,7 @@ final class LottoCheckNotification {
         notice.title = "로또 결과 확인 시간입니다!"
         notice.body = "이번 주 당첨 결과를 확인해세요~"
         notice.sound = .default
+        notice.badge = nil
         
         var dateComponents = DateComponents()
         dateComponents.weekday = 1
@@ -60,7 +62,7 @@ final class LottoCheckNotification {
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         
         let request = UNNotificationRequest(
-            identifier: "weekly_check_lotto",
+            identifier: identifier,
             content: notice,
             trigger: trigger
         )
@@ -75,7 +77,7 @@ final class LottoCheckNotification {
     }
     // 등록된 알림 제거
     func removeScheduledNotifications() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["weekly_lotto_check"])
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
     }
 
     // 현재 예약된 알림 조회 (디버깅용)
@@ -94,7 +96,7 @@ final class LottoCheckNotification {
         content.title = "test 제목"
         content.body = "test를 위한 내용이에유"
         content.sound = .default
-        content.badge = 1
+        content.badge = NSNumber(value: 1)
         
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
         

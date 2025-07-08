@@ -12,19 +12,19 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        UNUserNotificationCenter.current().setBadgeCount(0)
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert,.sound,.badge],
             completionHandler: { authorized, error in
                 print("알림 권한 허락함 : \(authorized)")
-//                if !authorized { // 권한이 없다면
-//                    LottoCheckNotification.shared.checkNoticePermission()
-//                }
+                if authorized {
+                    LottoCheckNotification.shared.checkNoticePermission()
+                }
             }
         )
         
         return true
     }
-
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
