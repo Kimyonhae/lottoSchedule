@@ -14,11 +14,6 @@ final class LottoCheckNotification {
     
     private init() {}
     
-    // 가지고 있는 Lotto 데이터를 비교 및 결과 확인 함수
-    func checkAllLottos() {
-        
-    }
-    
     // TODO: 권한이 없을 경우 권한 설정 페이지 이동
     func checkNoticePermission() {
         UNUserNotificationCenter.current().getNotificationSettings { setting in
