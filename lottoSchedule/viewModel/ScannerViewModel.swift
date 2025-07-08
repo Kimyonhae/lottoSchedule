@@ -1,4 +1,4 @@
-//
+    //
 //  ScannerViewModel.swift
 //  lottoSchedule
 //
@@ -13,6 +13,7 @@ enum ScannerNetworkError: Error {
     case timeout
     case invalidURL
     case secureConnectionFailed
+    case invaildQRScanResult
     case unknown(Error)
 
     var userMessage: String {
@@ -25,8 +26,9 @@ enum ScannerNetworkError: Error {
             return "잘못된 요청입니다."
         case .secureConnectionFailed:
             return "보안 연결에 실패했습니다."
+        case .invaildQRScanResult:
+            return "로또 QR 만 스캔 가능합니다."
         case .unknown(let error):
-            print("unknow : \(error.localizedDescription)")
             return "개발자에게 문의 해주세요"
         }
     }
@@ -60,7 +62,11 @@ class ScannerViewModel: ObservableObject {
                 case NSURLErrorUnsupportedURL, NSURLErrorBadURL:
                     networkError = .invalidURL
                 default:
-                    networkError = .unknown(err)
+                    if err.domain == NSURLErrorDomain {
+                        networkError = .invaildQRScanResult
+                    }else {
+                        networkError = .unknown(err)
+                    }
                 }
 
                 DispatchQueue.main.async {
@@ -90,7 +96,7 @@ class ScannerViewModel: ObservableObject {
                 let lottoResult = try doc.select("td.result").text() // 결과 있으면 string 없으면 ""
                 
                 // 필터링 - 미추첨 복권만 CoreData에 등록
-                if lottoResult.isEmpty {
+                if !lottoResult.isEmpty {
                     print("현 시점 미추첨 복권이 아닙니다")
                     self.scannerDelegate.scannerNotAvailableLotto()
                     return

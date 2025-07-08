@@ -9,7 +9,16 @@ import Foundation
 import UIKit
 
 class LottoResultController: UIViewController {
-    private var viewModel: LottoResultViewModel = .init()
+    private var viewModel: LottoResultViewModel
+    
+    init(viewModel: LottoResultViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // TODO: 로또 결과 box
     lazy var containerView: UIStackView = {
@@ -62,8 +71,19 @@ class LottoResultController: UIViewController {
         return date
     }()
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 뷰가 보이기 전 클로저를 전달하기
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.responseFailed = { [weak self] in
+            DispatchQueue.main.async {
+                self?.dismiss(animated: true)
+            }
+        }
         // 기본 셋업
         UICommon.setUpGradientBackground(view: self.view) // 배경색
         // navigation 제목 및 leftButton
