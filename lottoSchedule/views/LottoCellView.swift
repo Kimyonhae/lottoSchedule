@@ -33,7 +33,7 @@ class LottoCellView: UITableViewCell {
     private lazy var lottoPopButton: UIButton = {
         // data list
         let menu = [
-            MenuItem(title: "수정하기", iconName: "pencil.circle", action: .update),
+//            MenuItem(title: "수정하기", iconName: "pencil.circle", action: .update), 구현 시 활성화
             MenuItem(title: "삭제하기", iconName: "trash.circle", action: .delete)
         ]
         

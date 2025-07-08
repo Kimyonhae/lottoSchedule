@@ -97,7 +97,7 @@ class MainController: UIViewController {
         let appBarNavigation: UIStackView = {
             let bar = UIStackView(arrangedSubviews: [
                 titleView,
-                getTopbarButton(iconName: "magnifyingglass.circle.fill"),
+//              getTopbarButton(iconName: "magnifyingglass.circle.fill"), 검색 기능 구현시 활성화
                 moreButton
             ])
             bar.translatesAutoresizingMaskIntoConstraints = false
@@ -306,11 +306,45 @@ extension MainController: PopOverContentViewControllerDelegate {
     }
     
     func didTapLottoDestinationForResult() {
-        let lottoResultVC = UINavigationController(
-            rootViewController: LottoResultController()
-        )
-        lottoResultVC.modalPresentationStyle = .fullScreen
-        self.present(lottoResultVC, animated: true)
+        let viewModel = LottoResultViewModel()
+        guard let round = LottoDataManager.shared.lottos.first?.round else {
+            print("round 가 없습니다.")
+            return
+        }
+        viewModel.getLottoResult(round: Int(round)) { [weak self] response, error in
+            if response {
+                let lottoResultVC = UINavigationController(
+                    rootViewController: LottoResultController(viewModel: viewModel)
+                )
+                lottoResultVC.modalPresentationStyle = .fullScreen
+                self?.present(lottoResultVC, animated: true)
+            }else {
+                switch error {
+                    case .invaildResponse:
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController(
+                                title: "추첨 결과가 없습니다",
+                                message: "추첨이 완료되지 않아서 당첨 결과를 확인할 수 없습니다",
+                                preferredStyle: .alert
+                            )
+                            // add action
+                            alert.addAction(UIAlertAction(title: "확인", style: .cancel))
+                            self?.present(alert, animated: true)
+                        }
+                    default:
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController(
+                                title: "네트워크 오류",
+                                message: "일시적인 오류가 발생했습니다. 다시 시도해주세요.",
+                                preferredStyle: .alert
+                            )
+                            // add action
+                            alert.addAction(UIAlertAction(title: "확인", style: .cancel))
+                            self?.present(alert, animated: true)
+                        }
+                }
+            }
+        }
     }
     
     func didTapLottoDestinationForStorage() {
