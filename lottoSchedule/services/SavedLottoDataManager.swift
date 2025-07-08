@@ -17,17 +17,30 @@ class SavedLottoDataManager {
     }
     
     // TODO: CREATE Lotto
-    func createLotto(weekltyResult: [Lotto], lottoResultInfo: LottoResultInfo, ranks: [String]) {
+    func createLotto(weekltyResult: [Lotto], lottoResultInfo: LottoResultInfo, ranks: [String], completion: @escaping (Bool) -> Void) {
         guard let context = self.persistentContainer?.viewContext else { return }
         let lotto = SavedLotto(context: context)
+        var isSuccess: Bool = false
         
-        lotto.id = UUID()
-        lotto.date = lottoResultInfo.date
-        lotto.round = Int32(lottoResultInfo.round)
-        lotto.numbers = weekltyResult.map { $0.numbers } as NSArray
-        lotto.ranks = ranks as NSArray
+        defer {
+            completion(isSuccess)
+        }
         
-        try? context.save()
+        do {
+            lotto.id = UUID()
+            lotto.date = lottoResultInfo.date
+            lotto.round = Int32(lottoResultInfo.round)
+            lotto.numbers = weekltyResult.map { $0.numbers } as NSArray
+            lotto.ranks = ranks as NSArray
+            
+            try context.save()
+            isSuccess = true
+        } catch {
+            isSuccess = false
+            #if DEBUG
+                print("Create Lotto Occured Error: \(error)")
+            #endif
+        }
     }
     
     // TODO: READ Lotto
@@ -36,10 +49,11 @@ class SavedLottoDataManager {
         let req = SavedLotto.fetchRequest()
         do {
             let savedLotto = try context.fetch(req)
-            print("savedLotto count: \(savedLotto.count)")
             return savedLotto
         }catch {
-            print("context read Error : \(error)")
+            #if DEBUG
+                print("context read Error : \(error)")
+            #endif
         }
         
         return nil

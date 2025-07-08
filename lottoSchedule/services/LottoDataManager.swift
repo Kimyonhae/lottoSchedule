@@ -16,6 +16,7 @@ class LottoDataManager {
         (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer
     }
     
+    // TODO: Create Lotto
     func createLotto(numbers: [Int], round: String) {
         guard let context = self.persistentContainer?.viewContext else { return }
         let lotto = Lotto(context: context)
@@ -28,6 +29,7 @@ class LottoDataManager {
         try? context.save()
     }
     
+    // TODO: READ Lotto
     func readLotto() -> [Lotto]? {
         guard let context = persistentContainer?.viewContext else { return nil }
         let req = Lotto.fetchRequest()
@@ -35,17 +37,35 @@ class LottoDataManager {
             let lotto = try context.fetch(req)
             return lotto
         }catch {
-            print("context read Error : \(error)")
+            #if DEBUG
+                print("context read Error : \(error)")
+            #endif
         }
         
         return nil
     }
     
+    // TODO: one for Lotto delete
     func deleteLotto(lotto: Lotto) {
         guard let context = persistentContainer?.viewContext else { return }
-        print("hello..? delete...?")
         context.delete(lotto)
         try? context.save()
+    }
+    
+    // TODO: All Lottos Delete
+    func deleteAllLottos() {
+        guard let context = persistentContainer?.viewContext else { return }
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Lotto.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            #if DEBUG
+                print("All delete Failed : \(error.localizedDescription)")
+            #endif
+        }
     }
     
     //TODO: 기존 lottos 배열을 reload
