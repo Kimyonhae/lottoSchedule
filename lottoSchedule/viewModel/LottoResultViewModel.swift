@@ -15,22 +15,26 @@ struct LottoResultInfo {
     var firstWinamnt: Int       // 1 인당 당첨 금액
 }
 
+enum LottoResultError: Error {
+    case networkError
+    case dataDecodingError
+    case invaildResponse
+}
+
 final class LottoResultViewModel {
     var weekltyResult: [Lotto] // 현재 배열에 저장된 로또
     var ranks: [String] = []
     var lottoResultInfo: LottoResultInfo?
     var onLottoResultInfoUpdated: (() -> Void)? // LottoResultInfo를 뷰에 업데이트 하기 위한 클로저
     var onRankedUpdated: (([String]) -> Void)? // rank를 뷰에 업데이트 하기 위한 클로저
+    var responseFailed: (() -> Void)?
     
     init() {
         self.weekltyResult = LottoDataManager.shared.lottos
-        if let firstRound = weekltyResult.first?.round {
-            self.getLottoResult(round: Int(firstRound))
-        }        
     }
     
     // TODO: 회차 별 결과를 가져오는
-    func getLottoResult(round: Int) {
+    func getLottoResult(round: Int, completion: @escaping (Bool, LottoResultError?) -> Void) {
         let urlString: String =
         "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=\(round)"
         
@@ -39,6 +43,7 @@ final class LottoResultViewModel {
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, res, err in
             if let error = err {
                 print("error 발생 : \(error)")
+                completion(false, .networkError)
             }
             
             if let response = res as? HTTPURLResponse {
@@ -53,16 +58,21 @@ final class LottoResultViewModel {
                         do {
                             let lottoResult = try decoder.decode(LottoResult.self, from: data)
                             print(lottoResult)
-                            self.compareLottoResults(result: lottoResult) // 결과 비교 함수
+                            self.compareLottoResults(result: lottoResult){ res in // 결과 비교 함수
+                                completion(res, .invaildResponse)
+                            }
                         } catch {
                             print("json parsing 실패 : \(error)")
+                            completion(false, .dataDecodingError)
                         }
                     }
                     case 400...599:
                         print("통신 실패 : \(response.statusCode)")
+                    completion(false, .networkError)
                         return
                     default:
                         print("통신 실패 : \(response.statusCode)")
+                    completion(false, .networkError)
                         return
                 }
             }
@@ -71,15 +81,19 @@ final class LottoResultViewModel {
     }
     
     // TODO: 로또 결과를 통해 현재 내 로또들의 당첨 여부를 확인 함수
-    func compareLottoResults(result: LottoResult) {
+    func compareLottoResults(result: LottoResult, completion: @escaping (Bool) -> Void) {
         // success 가 아니라면 아직 결과가 나오지 않은 회차
-        guard result.returnValue == "success" else { return }                           // 가장 중요 API 성공 여부
-        guard let drwNo = result.drwNo else { return }                                  // 회차 번호
-        guard let drwNoDate = result.drwNoDate else { return }                          // 추첨 날짜
-        guard let totSellamnt = result.totSellamnt else { return }                      // 전체 금액
-        guard let firstAccumamnt = result.firstAccumamnt else { return }                // 1등 총 당첨 금액
-        guard let firstWinamnt = result.firstWinamnt else { return }                    // 1인당 당첨 금액
-        guard let bnusNo = result.bnusNo, result.bnusNo != nil else { return }          // 보너스 숫자
+        guard result.returnValue == "success" else {                             // 가장 중요 API 성공 여부
+            responseFailed?() // 클로저 전달
+            completion(false)
+            return
+        }
+        guard let drwNo = result.drwNo else { completion(false); return }                           // 회차 번호
+        guard let drwNoDate = result.drwNoDate else { completion(false); return }                   // 추첨 날짜
+        guard let totSellamnt = result.totSellamnt else { completion(false); return }               // 전체 금액
+        guard let firstAccumamnt = result.firstAccumamnt else { completion(false); return }         // 1등 총 당첨 금액
+        guard let firstWinamnt = result.firstWinamnt else { completion(false); return }             // 1인당 당첨 금액
+        guard let bnusNo = result.bnusNo, result.bnusNo != nil else { completion(false); return }   // 보너스 숫자
         let equalLottos = self.weekltyResult.filter { $0.round == drwNo }
         let winnerNumbers: Set<Int> = Set([ // 당첨 Set
             result.drwtNo1,result.drwtNo2,result.drwtNo3,
@@ -121,5 +135,6 @@ final class LottoResultViewModel {
             print("로또 번호 \(lottoSet), 당첨 번호 : \(matchLotto), 당첨 개수 : \(rank)")
         }
         self.onRankedUpdated?(ranks)
+        completion(true)
     }
 }
