@@ -38,6 +38,9 @@ class FirstRunController: UIViewController {
         
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30),
+            imageView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
+            imageView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
+            imageView.heightAnchor.constraint(equalTo: self.view.heightAnchor, multiplier: 0.2)
         ])
     }
     // TODO: 제목 뷰 설정
@@ -113,15 +116,15 @@ class FirstRunController: UIViewController {
             let container = UIStackView(arrangedSubviews: [
                 getInfoView(
                     iconName: "photo.on.rectangle.fill",
-                    info: "로또를 찰영하면 자동으로 번호가 인식돼요. 더 이상 번호를 입력하거나 잃어버릴 걱정은 없어요",
+                    info: "로또를 스캔하면 자동으로 저장돼요. 구매하자마자 등록하면 잊지 않을 수 있어요",
                 ),
                 getInfoView(
                     iconName: "folder.badge.person.crop",
-                    info: "로또들을 한눈에 확인하고 언제든 꺼내보는 나만의 로또 보관함",
+                    info: "로또를 한눈에 확인하고 언제든 꺼내보는 나만의 로또 보관함",
                 ),
                 getInfoView(
                     iconName: "alarm",
-                    info: "복권 추첨이 끝나는 날, 당신의 로또가 당첨됐는지 바로 알림을 드려요!",
+                    info: "복권 추첨 날, 당신의 로또가 당첨됐는지 바로 알림을 드려요!",
                 ),
             ])
             container.translatesAutoresizingMaskIntoConstraints = false
