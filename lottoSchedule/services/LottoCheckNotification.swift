@@ -18,7 +18,9 @@ final class LottoCheckNotification {
     func checkNoticePermission() {
         UNUserNotificationCenter.current().getNotificationSettings { setting in
             if setting.authorizationStatus != .authorized { // 권한 요청
-                print("여기가 권한이 없을 경우 와야 함")
+                #if DEBUG
+                    print("여기가 권한이 없을 경우 와야 함")
+                #endif
                 DispatchQueue.main.async {
                     let alert = UIAlertController(
                         title: "알림 권한이 필요합니다",
@@ -68,11 +70,13 @@ final class LottoCheckNotification {
         )
         
         UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("알림 등록 실패 : \(error)")
-            }else {
-                print("알림 등록 성공~")
-            }
+            #if DEBUG
+                if let error = error {
+                    print("알림 등록 실패 : \(error)")
+                }else {
+                    print("알림 등록 성공~")
+                }
+            #endif
         }
     }
     // 등록된 알림 제거
@@ -83,10 +87,12 @@ final class LottoCheckNotification {
     // 현재 예약된 알림 조회 (디버깅용)
     func printAllScheduledNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-            print("📋 등록된 알림:")
-            for r in requests {
-                print(" - \(r.identifier)")
-            }
+            #if DEBUG
+                print("📋 등록된 알림:")
+                for r in requests {
+                    print(" - \(r.identifier)")
+                }
+            #endif
         }
     }
     

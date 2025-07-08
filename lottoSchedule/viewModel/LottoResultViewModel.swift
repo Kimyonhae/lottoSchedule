@@ -42,37 +42,33 @@ final class LottoResultViewModel {
         
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, res, err in
             if let error = err {
-                print("error 발생 : \(error)")
+                #if DEBUG
+                    print("Error : \(error)")
+                #endif
                 completion(false, .networkError)
             }
             
             if let response = res as? HTTPURLResponse {
                 switch response.statusCode {
                     case 200...399:
-                        print("통신 성공 : \(response.statusCode)")
-                        
                         // data가 성공적일 경우
                     if let data = data {
                         let decoder = JSONDecoder()
                         
                         do {
                             let lottoResult = try decoder.decode(LottoResult.self, from: data)
-                            print(lottoResult)
                             self.compareLottoResults(result: lottoResult){ res in // 결과 비교 함수
                                 completion(res, .invaildResponse)
                             }
                         } catch {
-                            print("json parsing 실패 : \(error)")
                             completion(false, .dataDecodingError)
                         }
                     }
                     case 400...599:
-                        print("통신 실패 : \(response.statusCode)")
-                    completion(false, .networkError)
+                        completion(false, .networkError)
                         return
                     default:
-                        print("통신 실패 : \(response.statusCode)")
-                    completion(false, .networkError)
+                        completion(false, .networkError)
                         return
                 }
             }
@@ -132,7 +128,9 @@ final class LottoResultViewModel {
                 }
             }
             ranks.append(rank) // rank 추가
-            print("로또 번호 \(lottoSet), 당첨 번호 : \(matchLotto), 당첨 개수 : \(rank)")
+            #if DEBUG
+                print("로또 번호 \(lottoSet), 당첨 번호 : \(matchLotto), 당첨 개수 : \(rank)")
+            #endif
         }
         self.onRankedUpdated?(ranks)
         completion(true)

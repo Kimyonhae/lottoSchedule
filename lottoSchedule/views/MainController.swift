@@ -247,7 +247,6 @@ extension MainController: LottoCellViewDelegate {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             // 카메라 실행
-            print(" 접근 권한이 있음!!")
             completionHandler(true)
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { granted in
@@ -258,7 +257,6 @@ extension MainController: LottoCellViewDelegate {
             if let appSettingPath = URL(string: UIApplication.openSettingsURLString),UIApplication.shared.canOpenURL(appSettingPath) {
                 UIApplication.shared.open(appSettingPath, options: [:], completionHandler: nil)
             }
-            print("접근을 허용 안함")
             completionHandler(false)
         }
     }
@@ -308,7 +306,6 @@ extension MainController: PopOverContentViewControllerDelegate {
     func didTapLottoDestinationForResult() {
         let viewModel = LottoResultViewModel()
         guard let round = LottoDataManager.shared.lottos.first?.round else {
-            print("round 가 없습니다.")
             return
         }
         viewModel.getLottoResult(round: Int(round)) { [weak self] response, error in

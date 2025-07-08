@@ -60,6 +60,7 @@ class LottoResultController: UIViewController {
         btn.layer.cornerRadius = 14
         return btn
     }()
+    
     // TODO: 하단 DateLabel
     let dateLabel: UILabel = {
         let date = UILabel()
@@ -281,11 +282,18 @@ class LottoResultController: UIViewController {
             if let weekltyResult = self?.viewModel.weekltyResult,
                let lottoResultInfo = self?.viewModel.lottoResultInfo,
                let ranks = self?.viewModel.ranks {
+                // 저장된 로또들
                 SavedLottoDataManager.shared.createLotto(
                     weekltyResult: weekltyResult,
                     lottoResultInfo: lottoResultInfo,
                     ranks: ranks
-                )
+                ) { result in
+                    if result {
+                        // 이번주 로또 지우기
+                        LottoDataManager.shared.deleteAllLottos()
+                    }
+                    // 실패
+                }
             }
             self?.dismiss(animated: true) // 닫기
         }, for: .touchUpInside)

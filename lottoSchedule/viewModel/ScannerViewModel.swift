@@ -28,7 +28,7 @@ enum ScannerNetworkError: Error {
             return "보안 연결에 실패했습니다."
         case .invaildQRScanResult:
             return "로또 QR 만 스캔 가능합니다."
-        case .unknown(let error):
+        case .unknown:
             return "개발자에게 문의 해주세요"
         }
     }
@@ -49,7 +49,6 @@ class ScannerViewModel: ObservableObject {
 
         let finalURLString = "https://m.dhlottery.co.kr/qr.do?method=winQr&v=\(value)"
         guard let url = URL(string: finalURLString) else { return }
-        print(url)
         let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
                 
             if let err = error as NSError? {
@@ -76,7 +75,6 @@ class ScannerViewModel: ObservableObject {
             }
             
             guard let data = data else {
-                print("HTML data parsing 실패")
                 return
             }
             
@@ -97,7 +95,9 @@ class ScannerViewModel: ObservableObject {
                 
                 // 필터링 - 미추첨 복권만 CoreData에 등록
                 if !lottoResult.isEmpty {
-                    print("현 시점 미추첨 복권이 아닙니다")
+                    #if DEBUG
+                        print("현 시점 미추첨 복권이 아닙니다")
+                    #endif
                     self.scannerDelegate.scannerNotAvailableLotto()
                     return
                 }
@@ -113,7 +113,9 @@ class ScannerViewModel: ObservableObject {
                 }
                 
             }catch {
-                print("error : \(error)")
+                #if DEBUG
+                    print("error : \(error)")
+                #endif
             }
         }
         

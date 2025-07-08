@@ -61,9 +61,10 @@ class PopOverContentViewController: UITableViewController {
         
         switch selectedAction {
             case .update:
+            #if DEBUG
                 print("update!!")
+            #endif
             case .delete:
-                print("hello delete!!")
                 if let lotto = lotto {
                     self.popDelegate?.didTapDeleteButton(lotto: lotto)
                 }

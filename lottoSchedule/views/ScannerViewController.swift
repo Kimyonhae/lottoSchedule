@@ -99,7 +99,9 @@ class ScannerViewController: UIViewController {
                 self.captureSession.startRunning()
             }
         } catch {
-            print("카메라 접근 실패..\(error)")
+            #if DEBUG
+                print("카메라 접근 실패..\(error)")
+            #endif
         }
         
         self.view.addSubview(cameraView)
