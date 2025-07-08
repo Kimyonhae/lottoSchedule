@@ -12,11 +12,17 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        UNUserNotificationCenter.current().setBadgeCount(0)
+        if #available(iOS 16.0, *)  {
+            UNUserNotificationCenter.current().setBadgeCount(0)
+        }
+        // IOS 15
+        UIApplication.shared.applicationIconBadgeNumber = 0
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert,.sound,.badge],
             completionHandler: { authorized, error in
-                print("알림 권한 허락함 : \(authorized)")
+                #if DEBUG
+                    print("알림 권한 허락함 : \(authorized)")
+                #endif
                 if authorized {
                     LottoCheckNotification.shared.checkNoticePermission()
                 }
