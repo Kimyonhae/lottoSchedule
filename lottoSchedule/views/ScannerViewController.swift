@@ -27,7 +27,7 @@ class ScannerViewController: UIViewController {
     // TODO: QR 설명 Label
     lazy var explainLabel: UILabel = {
         let label = UILabel()
-        label.text = "QR 코드를 스캔하거나 QR 이미지를 업로드 해보세요"
+        label.text = "QR 코드를 스캔하면 자동으로 로또가 등록돼요"
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 14, weight: .semibold)
         label.tintColor = .systemGray3
