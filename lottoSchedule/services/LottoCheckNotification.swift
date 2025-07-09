@@ -88,7 +88,7 @@ final class LottoCheckNotification {
     func printAllScheduledNotifications() {
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             #if DEBUG
-                print("📋 등록된 알림:")
+                print("등록된 알림:")
                 for r in requests {
                     print(" - \(r.identifier)")
                 }
