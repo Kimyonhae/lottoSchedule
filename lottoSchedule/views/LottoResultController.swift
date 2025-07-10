@@ -287,6 +287,7 @@ class LottoResultController: UIViewController {
                     if result {
                         // 이번주 로또 지우기
                         LottoDataManager.shared.deleteAllLottos()
+                        LottoDataManager.shared.updateLottos()
                     }
                     // 실패
                 }
