@@ -85,6 +85,7 @@ class LottoResultController: UIViewController {
                 self?.dismiss(animated: true)
             }
         }
+        
         // 기본 셋업
         UICommon.setUpGradientBackground(view: self.view) // 배경색
         // navigation 제목 및 leftButton
@@ -97,22 +98,17 @@ class LottoResultController: UIViewController {
         let (firstAccumamntLabel ,firstAccumamnt) = getLottoInfo(title: "1등 총 당첨 금액", money: "...", superview: totalMoney)
         // 3번재 금액
         let (firstWinamnt,_) = getLottoInfo(title: "1인당 1등 당첨 금액", money: "...", superview: firstAccumamnt)
-        // 금액 Label 값 바인딩
-        viewModel.onLottoResultInfoUpdated = { [weak self] in
-            guard let lottoResultInfo = self?.viewModel.lottoResultInfo else { return }
-            
-            DispatchQueue.main.async {
-                self?.roundLabel.text = "제 \(lottoResultInfo.round)회"
-                totSellamntLabel.text = String.formatCurrency(lottoResultInfo.totSellamnt)
-                firstAccumamntLabel.text = String.formatCurrency(lottoResultInfo.firstAccumamnt)
-                firstWinamnt.text = String.formatCurrency(lottoResultInfo.firstWinamnt)
-                self?.dateLabel.text = "\(Date.dateResultFormatter(with: lottoResultInfo.date)) 추첨되었습니다"
-            }
-        }
         // 버튼 뷰
         setUpButton()
         // date 정보
-        setUpDateView(with: "2025년 6월 28일 추첨되었습니다")
+        setUpDateView()
+        // 값 바인딩
+        guard let lottoResultInfo = self.viewModel.lottoResultInfo else { return }
+        self.roundLabel.text = "제 \(lottoResultInfo.round)회"
+        totSellamntLabel.text = String.formatCurrency(lottoResultInfo.totSellamnt)
+        firstAccumamntLabel.text = String.formatCurrency(lottoResultInfo.firstAccumamnt)
+        firstWinamnt.text = String.formatCurrency(lottoResultInfo.firstWinamnt)
+        self.dateLabel.text = "\(Date.dateResultFormatter(with: lottoResultInfo.date)) 추첨되었습니다"
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -266,7 +262,7 @@ class LottoResultController: UIViewController {
     }
     
     // TODO: 날짜 정보 뷰
-    private func setUpDateView(with text: String) {
+    private func setUpDateView() {
         
         self.view.addSubview(dateLabel)
         NSLayoutConstraint.activate([

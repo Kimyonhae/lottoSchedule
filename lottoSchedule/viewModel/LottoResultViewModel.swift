@@ -25,7 +25,6 @@ final class LottoResultViewModel {
     var weekltyResult: [Lotto] // 현재 배열에 저장된 로또
     var ranks: [String] = []
     var lottoResultInfo: LottoResultInfo?
-    var onLottoResultInfoUpdated: (() -> Void)? // LottoResultInfo를 뷰에 업데이트 하기 위한 클로저
     var onRankedUpdated: (([String]) -> Void)? // rank를 뷰에 업데이트 하기 위한 클로저
     var responseFailed: (() -> Void)?
     
@@ -104,7 +103,6 @@ final class LottoResultViewModel {
             firstAccumamnt: firstAccumamnt,
             firstWinamnt: firstWinamnt
         )
-        self.onLottoResultInfoUpdated?() // 콜백 실행
         
         // 같은 회차 그룹
         equalLottos.forEach { lotto in
