@@ -310,11 +310,13 @@ extension MainController: PopOverContentViewControllerDelegate {
         }
         viewModel.getLottoResult(round: Int(round)) { [weak self] response, error in
             if response {
-                let lottoResultVC = UINavigationController(
-                    rootViewController: LottoResultController(viewModel: viewModel)
-                )
-                lottoResultVC.modalPresentationStyle = .fullScreen
-                self?.present(lottoResultVC, animated: true)
+                DispatchQueue.main.async {
+                    let lottoResultVC = UINavigationController(
+                        rootViewController: LottoResultController(viewModel: viewModel)
+                    )
+                    lottoResultVC.modalPresentationStyle = .fullScreen
+                    self?.present(lottoResultVC, animated: true)
+                }
             }else {
                 switch error {
                     case .invaildResponse:
