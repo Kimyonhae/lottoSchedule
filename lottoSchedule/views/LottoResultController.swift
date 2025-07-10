@@ -124,6 +124,10 @@ class LottoResultController: UIViewController {
     
     // TODO: dismiss method
     @objc func closeScreen() {
+        DispatchQueue.main.async {
+            LottoDataManager.shared.deleteAllLottos()
+            LottoDataManager.shared.updateLottos()
+        }
         self.dismiss(animated: true)
     }
     // TODO: 당첨 결과 뷰
