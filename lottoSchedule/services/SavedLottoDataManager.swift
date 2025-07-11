@@ -63,4 +63,34 @@ class SavedLottoDataManager {
     func updateLottos() {
         self.savedLottos = readLotto() ?? []
     }
+    
+    func deleteLotto(atSection section: Int, row: Int) {
+        guard let context = persistentContainer?.viewContext else { return }
+        guard section < savedLottos.count,
+              var numbers = savedLottos[section].numbers as? [[Int]],
+              var ranks = savedLottos[section].ranks as? [String],
+              row < numbers.count, row < ranks.count else { return }
+
+        numbers.remove(at: row)
+        ranks.remove(at: row)
+
+        savedLottos[section].numbers = numbers as NSArray
+        savedLottos[section].ranks = ranks as NSArray
+
+        // 저장소에 반영
+        try? context.save()
+    }
+    
+    func deleteLottoSection(at section: Int) {
+        guard section < savedLottos.count,
+              let context = persistentContainer?.viewContext else { return }
+        let lottoToDelete = savedLottos[section]
+        context.delete(lottoToDelete)
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to delete section: \(error)")
+        }
+    }
 }

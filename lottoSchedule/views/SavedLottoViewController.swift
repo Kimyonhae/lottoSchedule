@@ -101,4 +101,23 @@ extension SavedLottoViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 44
     }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Delete the specific row
+            SavedLottoDataManager.shared.deleteLotto(atSection: indexPath.section, row: indexPath.row)
+            SavedLottoDataManager.shared.updateLottos()
+            savedLottos = SavedLottoDataManager.shared.savedLottos
+
+            if (savedLottos[indexPath.section].numbers as! [[Int]]).isEmpty {
+                // 해당 section이 비어있다면 section 제거
+                SavedLottoDataManager.shared.deleteLottoSection(at: indexPath.section)
+                SavedLottoDataManager.shared.updateLottos()
+                savedLottos = SavedLottoDataManager.shared.savedLottos
+                tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+            } else {
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+            }
+        }
+    }
 }
