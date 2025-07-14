@@ -20,6 +20,27 @@ class LottoResultController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // TODO: 로또 프리뷰 Container
+    let resultContainer: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.distribution = .fill
+        stack.backgroundColor = .white
+        stack.spacing = 8
+        
+        stack.layer.shadowColor = UIColor(hex: "676767").cgColor
+        stack.layer.shadowOffset = CGSize(width: 0, height: 0)
+        stack.layer.shadowOpacity = 0.25
+        stack.layer.shadowRadius = 4
+        stack.layer.cornerRadius = 12
+        
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.layoutMargins = UIEdgeInsets(top: 16, left: 16, bottom: 8, right: 16)
+        
+        return stack
+    }()
+    
     // TODO: 로또 결과 box
     lazy var containerView: UIStackView = {
         let stack = UIStackView()
@@ -72,12 +93,6 @@ class LottoResultController: UIViewController {
         return date
     }()
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        // 뷰가 보이기 전 클로저를 전달하기
-        
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         viewModel.responseFailed = { [weak self] in
@@ -90,6 +105,10 @@ class LottoResultController: UIViewController {
         UICommon.setUpGradientBackground(view: self.view) // 배경색
         // navigation 제목 및 leftButton
         setUpConfigure()
+        // 1등 당첨 프리 뷰
+        if let winnerNumbers = viewModel.lottoResultInfo?.winnerNumbers {
+            setUpLottoResultPreView(result: winnerNumbers)
+        }
         // 당첨 결과 뷰
         setUpLottoResultConfigure()
         // 첫번째 금액
@@ -130,6 +149,62 @@ class LottoResultController: UIViewController {
         }
         self.dismiss(animated: true)
     }
+    
+    // TODO: 당첨 로또 뷰
+    private func setUpLottoResultPreView(result: Set<Int>) {
+        let descriptionLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.textColor = UIColor(hex: "D44853")
+            label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+            label.text = "이번주 로또 번호"
+            label.textAlignment = .left
+            
+            return label
+        }()
+        
+        // Divider
+        let divider: UIView = {
+            let view = UIView()
+            view.backgroundColor = UIColor.systemGray4
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
+        }()
+        
+        // bottom stack Lotto Preview
+        let stackView: UIStackView = {
+            let stack = UIStackView()
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            stack.axis = .horizontal
+            stack.alignment = .center
+            stack.distribution = .equalSpacing
+            
+            return stack
+        }()
+        
+        // label 주입
+        result.forEach {
+            stackView.addArrangedSubview(UICommon.getLottoNumber(num: $0))
+        }
+        
+        resultContainer.addArrangedSubview(descriptionLabel)
+        resultContainer.addArrangedSubview(divider)
+        resultContainer.addArrangedSubview(stackView)
+        
+        self.view.addSubview(resultContainer)
+        
+        NSLayoutConstraint.activate([
+            // resultContainer
+            resultContainer.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            resultContainer.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
+            resultContainer.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
+            
+            // divider
+            divider.heightAnchor.constraint(equalToConstant: 1),
+            //bottomStackView
+        ])
+    }
+    
     // TODO: 당첨 결과 뷰
     private func setUpLottoResultConfigure() {
         let descriptionLabel: UILabel = {
@@ -188,7 +263,7 @@ class LottoResultController: UIViewController {
         
         NSLayoutConstraint.activate([
             // container
-            containerView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            containerView.topAnchor.constraint(equalTo: self.resultContainer.bottomAnchor, constant: 20),
             containerView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
             containerView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -15),
             // topStackView
