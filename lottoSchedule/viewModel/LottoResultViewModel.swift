@@ -13,6 +13,7 @@ struct LottoResultInfo {
     var totSellamnt: Int        // 전체 금액
     var firstAccumamnt: Int     // 1등 총 당첨 금액
     var firstWinamnt: Int       // 1 인당 당첨 금액
+    var winnerNumbers: Set<Int>    // 1등 로또 결과
 }
 
 enum LottoResultError: Error {
@@ -101,7 +102,8 @@ final class LottoResultViewModel {
             date: drwNoDate,
             totSellamnt: totSellamnt,
             firstAccumamnt: firstAccumamnt,
-            firstWinamnt: firstWinamnt
+            firstWinamnt: firstWinamnt,
+            winnerNumbers: winnerNumbers
         )
         
         // 같은 회차 그룹
