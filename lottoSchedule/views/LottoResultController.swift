@@ -398,7 +398,8 @@ extension LottoResultController: UITableViewDelegate, UITableViewDataSource {
         cell.selectionStyle = .none
         cell.configure(
             with: viewModel.weekltyResult[indexPath.row].numbers as! [Int],
-            rank: indexPath.row < viewModel.ranks.count ? viewModel.ranks[indexPath.row] : "결과 없음"
+            rank: indexPath.row < viewModel.ranks.count ? viewModel.ranks[indexPath.row] : "결과 없음",
+            matchedNumbers: viewModel.lottoResultInfo?.matchNumbers ?? [],
         )
         
         return cell
