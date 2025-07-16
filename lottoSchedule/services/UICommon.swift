@@ -51,4 +51,24 @@ class UICommon {
         label.backgroundColor = UIColor.getLottoColor(for: num)
         return label
     }
+    
+    // TODO: Lotto 숫자 각각 한개에 해당 ( 결과뷰 해당)
+    static func getResultLottoNumber(num: Int, matchedNumbers: Set<Int>) -> UILabel {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "\(num)"
+        label.textAlignment = .center
+        label.font = .boldSystemFont(ofSize: 14)
+        label.textColor = .white
+        if matchedNumbers.contains(num) { // 1등 로또와 같은 로또만 border 주입
+            label.layer.borderWidth = 1
+            label.layer.borderColor = UIColor.black.cgColor
+        }
+        label.layer.cornerRadius = 20
+        label.clipsToBounds = true
+        label.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        label.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        label.backgroundColor = UIColor.getLottoColor(for: num)
+        return label
+    }
 }
