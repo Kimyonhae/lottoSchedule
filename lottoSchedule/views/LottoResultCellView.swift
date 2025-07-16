@@ -41,11 +41,11 @@ final class LottoNumberCell: UITableViewCell {
         ])
     }
 
-    func configure(with numbers: [Int], rank: String) {
+    func configure(with numbers: [Int], rank: String, matchedNumbers: Set<Int>) {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         numbers.forEach { number in
-            let numberView = UICommon.getLottoNumber(num: number)
+            let numberView = UICommon.getResultLottoNumber(num: number, matchedNumbers: matchedNumbers)
             stackView.addArrangedSubview(numberView)
         }
 
