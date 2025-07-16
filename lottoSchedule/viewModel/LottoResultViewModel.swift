@@ -13,7 +13,8 @@ struct LottoResultInfo {
     var totSellamnt: Int        // 전체 금액
     var firstAccumamnt: Int     // 1등 총 당첨 금액
     var firstWinamnt: Int       // 1 인당 당첨 금액
-    var winnerNumbers: Set<Int>    // 1등 로또 결과
+    var winnerNumbers: Set<Int> // 1등 로또 결과
+    var matchNumbers: Set<Int>  // 맞힌 로또 번호들
 }
 
 enum LottoResultError: Error {
@@ -103,7 +104,8 @@ final class LottoResultViewModel {
             totSellamnt: totSellamnt,
             firstAccumamnt: firstAccumamnt,
             firstWinamnt: firstWinamnt,
-            winnerNumbers: winnerNumbers
+            winnerNumbers: winnerNumbers,
+            matchNumbers: []
         )
         
         // 같은 회차 그룹
@@ -128,6 +130,7 @@ final class LottoResultViewModel {
                 }
             }
             ranks.append(rank) // rank 추가
+            lottoResultInfo?.matchNumbers = matchLotto
             #if DEBUG
                 print("로또 번호 \(lottoSet), 당첨 번호 : \(matchLotto), 당첨 개수 : \(rank)")
             #endif
