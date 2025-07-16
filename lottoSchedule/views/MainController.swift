@@ -14,6 +14,7 @@ class MainController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(true, animated: false) // 기존 AppBar Remove
+        LottoDataManager.shared.updateLottos() // 업데이트
         tableView.reloadData() // dismiss로 돌아올때 tableView 업데이트
     }
     

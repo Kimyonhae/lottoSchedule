@@ -94,13 +94,13 @@ class ScannerViewModel: ObservableObject {
                 let lottoResult = try doc.select("td.result").text() // 결과 있으면 string 없으면 ""
                 
                 // 필터링 - 미추첨 복권만 CoreData에 등록
-                if !lottoResult.isEmpty {
-                    #if DEBUG
-                        print("현 시점 미추첨 복권이 아닙니다")
-                    #endif
-                    self.scannerDelegate.scannerNotAvailableLotto()
-                    return
-                }
+//                if !lottoResult.isEmpty {
+//                    #if DEBUG
+//                        print("현 시점 미추첨 복권이 아닙니다")
+//                    #endif
+//                    self.scannerDelegate.scannerNotAvailableLotto()
+//                    return
+//                }
                 
                 // { 필터링 [6개] , 회차 수 }를 가진 타입으로 변환
                 let chunkedList = stride(from: 0, to: numbers.count, by: 6).map {

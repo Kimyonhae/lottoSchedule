@@ -136,7 +136,8 @@ class LottoCellView: UITableViewCell {
     
     // 초기화
     override func prepareForReuse() {
+        super.prepareForReuse()
         dateLabel.text = nil
-        numberStack.subviews.forEach{ $0.removeFromSuperview() }
+        numberStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
     }
 }

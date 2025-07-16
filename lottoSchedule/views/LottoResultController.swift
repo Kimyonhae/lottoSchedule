@@ -100,7 +100,6 @@ class LottoResultController: UIViewController {
                 self?.dismiss(animated: true)
             }
         }
-        
         // 기본 셋업
         UICommon.setUpGradientBackground(view: self.view) // 배경색
         // navigation 제목 및 leftButton
@@ -143,11 +142,10 @@ class LottoResultController: UIViewController {
     
     // TODO: dismiss method
     @objc func closeScreen() {
-        DispatchQueue.main.async {
-            LottoDataManager.shared.deleteAllLottos()
-            LottoDataManager.shared.updateLottos()
+        Task { @MainActor in
+            await LottoDataManager.shared.deleteAllLottos()
+            self.dismiss(animated: true)
         }
-        self.dismiss(animated: true)
     }
     
     // TODO: 당첨 로또 뷰
@@ -365,13 +363,15 @@ class LottoResultController: UIViewController {
                 ) { result in
                     if result {
                         // 이번주 로또 지우기
-                        LottoDataManager.shared.deleteAllLottos()
-                        LottoDataManager.shared.updateLottos()
+                        Task { @MainActor in
+                            await LottoDataManager.shared.deleteAllLottos()
+                            LottoDataManager.shared.updateLottos()
+                            self?.dismiss(animated: true) // 닫기
+                        }
                     }
                     // 실패
                 }
             }
-            self?.dismiss(animated: true) // 닫기
         }, for: .touchUpInside)
         
         self.view.addSubview(saveButton)

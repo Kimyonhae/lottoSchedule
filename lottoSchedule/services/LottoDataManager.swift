@@ -8,6 +8,7 @@
 import UIKit
 import CoreData
 
+
 class LottoDataManager {
     static let shared = LottoDataManager()
     var lottos: [Lotto] = [] // 전역으로 사용할 Data
@@ -53,18 +54,21 @@ class LottoDataManager {
     }
     
     // TODO: All Lottos Delete
-    func deleteAllLottos() {
+    @MainActor
+    func deleteAllLottos() async {
         guard let context = persistentContainer?.viewContext else { return }
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Lotto.fetchRequest()
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         
-        do {
-            try context.execute(deleteRequest)
-            try context.save()
-        } catch {
-            #if DEBUG
-                print("All delete Failed : \(error.localizedDescription)")
-            #endif
+        await context.perform {
+            do {
+                try context.execute(deleteRequest)
+                try context.save()
+            } catch {
+                #if DEBUG
+                    print("All delete Failed : \(error.localizedDescription)")
+                #endif
+            }
         }
     }
     
